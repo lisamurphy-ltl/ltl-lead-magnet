@@ -2,27 +2,36 @@
    Navy #060A16 · Gold #D4AF37 · Barlow Condensed + Inter */
 
 :root{
-  --navy:#060A16;
-  --navy-2:#0B1124;
-  --card:#111A2E;
-  --card-2:#16203a;
-  --line:rgba(212,175,55,.18);
-  --gold:#D4AF37;
-  --gold-soft:#E7C964;
-  --ink:#F4F1E9;
-  --muted:#9AA6BF;
-  --muted-2:#6E7A93;
+  --navy:#05080F;
+  --navy-2:#0A1020;
+  --card:#0e1730;
+  --card-2:#0b1326;
+  /* brand metallics: cool chrome/steel + teal, warm ember core */
+  --steel:#7DC0F0;
+  --teal:#34A8C0;
+  --ember:#FF8A3D;
+  --ember-2:#FFB066;
+  --chrome-hi:#EAF3FF;
+  --line:rgba(125,192,240,.20);
+  /* legacy var names kept = steel accent so existing rules pick up the new look */
+  --gold:#8CC6F2;
+  --gold-soft:#B6DCF8;
+  --ink:#EEF3FB;
+  --muted:#9DB0CE;
+  --muted-2:#6E7E9C;
   --good:#5FC9A0;
   --danger:#E2655B;
   --radius:16px;
   --maxw:560px;
-  --shadow:0 18px 50px rgba(0,0,0,.45);
+  --shadow:0 22px 60px rgba(0,0,0,.55);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{
-  background:radial-gradient(1200px 600px at 50% -10%, #0d1530 0%, var(--navy) 60%) fixed;
+  background:
+    radial-gradient(900px 520px at 50% 38%, rgba(60,120,200,.16), transparent 60%),
+    radial-gradient(1200px 700px at 50% -12%, #11203f 0%, var(--navy) 58%) fixed;
   color:var(--ink);
   font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
   line-height:1.55;
@@ -35,9 +44,9 @@ body{
 body::before{
   content:"";position:fixed;inset:-25%;z-index:-1;pointer-events:none;
   background:
-    radial-gradient(38% 32% at 18% 12%, rgba(212,175,55,.12), transparent 62%),
-    radial-gradient(42% 38% at 86% 22%, rgba(86,128,210,.14), transparent 62%),
-    radial-gradient(48% 44% at 62% 92%, rgba(212,175,55,.09), transparent 62%);
+    radial-gradient(40% 34% at 15% 14%, rgba(125,192,240,.16), transparent 62%),
+    radial-gradient(44% 40% at 88% 24%, rgba(255,138,61,.13), transparent 60%),
+    radial-gradient(52% 46% at 62% 96%, rgba(52,168,192,.13), transparent 62%);
   animation:drift 20s ease-in-out infinite alternate;
 }
 @keyframes drift{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(0,-3%,0) scale(1.1)}}
@@ -71,20 +80,30 @@ h1.title .accent{display:block}
 /* ---------- metallic shimmer ---------- */
 @keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
 .shimmer{
-  background:linear-gradient(100deg,#9c7a1e 0%,#D4AF37 18%,#f6e9b0 38%,#fffaf0 50%,#f6e9b0 62%,#D4AF37 82%,#9c7a1e 100%);
+  background:linear-gradient(100deg,#5a86b5 0%,#9fc6ea 20%,#eaf3ff 38%,#ffffff 50%,#eaf3ff 62%,#9fc6ea 80%,#5a86b5 100%);
   background-size:200% auto;
   -webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent;color:transparent;
   animation:shimmer 6s linear infinite;
 }
 @media (prefers-reduced-motion:reduce){ .shimmer,.meter .money{animation:none} }
+
+/* ---------- brand hero infinity mark ---------- */
+.hero-mark{display:block;width:124px;height:auto;margin:2px auto 20px;
+  filter:drop-shadow(0 10px 26px rgba(0,0,0,.55)) drop-shadow(0 0 22px rgba(255,138,61,.25));
+  animation:floaty 6s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){ .hero-mark{animation:none} }
 h2.title{font-size:clamp(24px,6.5vw,32px);margin-bottom:6px}
 .lede{color:var(--muted);font-size:17px;margin-top:14px}
 .sub{color:var(--muted);font-size:15px;margin-top:8px}
 
 /* ---------- cards / choices ---------- */
-.card{position:relative;background:linear-gradient(180deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.05)}
-.card::before{content:"";position:absolute;top:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.55),transparent)}
+.card{position:relative;background:linear-gradient(180deg,rgba(24,38,72,.55),rgba(10,18,38,.42));
+  backdrop-filter:blur(14px) saturate(125%);-webkit-backdrop-filter:blur(14px) saturate(125%);
+  border:1px solid rgba(125,192,240,.22);border-radius:var(--radius);padding:18px;
+  box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.09)}
+.card::before{content:"";position:absolute;top:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(190,224,255,.75),transparent)}
 .stack{display:flex;flex-direction:column;gap:12px;margin-top:22px}
 
 .bullets{list-style:none;display:flex;flex-direction:column;gap:14px;margin:24px 0}
@@ -134,15 +153,15 @@ textarea{min-height:96px;resize:vertical}
 
 /* ---------- buttons ---------- */
 .btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;
-  background:linear-gradient(135deg,#E7C964,#D4AF37 55%,#b8941f);color:#231b03;font-weight:700;
+  background:linear-gradient(135deg,#FFB066,#FF8A3D 52%,#EF6E1F);color:#2a1303;font-weight:700;
   font-size:16px;border:none;border-radius:12px;padding:16px 18px;cursor:pointer;
-  box-shadow:0 10px 26px rgba(212,175,55,.28);transition:.18s;font-family:inherit}
+  box-shadow:0 12px 30px rgba(255,138,61,.34);transition:.18s;font-family:inherit}
 .btn:not(.secondary)::after{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;
   background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);
   animation:sweep 5s ease-in-out infinite}
 @keyframes sweep{0%,55%{left:-60%}100%{left:140%}}
 @media (prefers-reduced-motion:reduce){ .btn::after{display:none} }
-.btn:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(212,175,55,.4)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 16px 36px rgba(255,138,61,.45)}
 .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none}
 .btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none;font-weight:600}
 .btn.secondary:hover{border-color:var(--gold)}
@@ -155,9 +174,9 @@ textarea{min-height:96px;resize:vertical}
 /* ---------- the meter / numbers ---------- */
 .meter{text-align:center;padding:14px 0 4px}
 .meter .money{font-family:"Barlow Condensed";font-weight:700;font-size:clamp(48px,16vw,84px);line-height:1;
-  background:linear-gradient(100deg,#9c7a1e 0%,#D4AF37 18%,#f6e9b0 38%,#fffaf0 50%,#f6e9b0 62%,#D4AF37 82%,#9c7a1e 100%);
+  background:linear-gradient(100deg,#c2541a 0%,#ff8a3d 20%,#ffd9a8 40%,#fff3e6 50%,#ffd9a8 60%,#ff8a3d 80%,#c2541a 100%);
   background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
-  filter:drop-shadow(0 0 26px rgba(212,175,55,.30));animation:shimmer 7s linear infinite}
+  filter:drop-shadow(0 0 30px rgba(255,138,61,.38));animation:shimmer 7s linear infinite}
 .meter .per{color:var(--muted);font-size:14px;letter-spacing:2px;text-transform:uppercase;margin-top:6px}
 .tick{color:var(--muted-2);font-size:13px;margin-top:10px}
 .mathline{font-family:"Barlow Condensed";letter-spacing:.3px;color:var(--muted);font-size:14px;background:var(--navy-2);border:1px dashed var(--line);border-radius:10px;padding:9px 12px;margin-top:10px}

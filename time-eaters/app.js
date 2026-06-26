@@ -65,10 +65,36 @@
 
   function screen(html) { $app.innerHTML = `<section class="screen">${html}</section>`; }
 
+  // Brand glass-chrome infinity mark (cool chrome loops + warm ember core)
+  function infinityMark() {
+    return `
+      <svg class="hero-mark" viewBox="0 0 200 110" role="img" aria-label="Limited to Limitless">
+        <defs>
+          <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4f7aa8"/><stop offset=".34" stop-color="#dce9f7"/>
+            <stop offset=".5" stop-color="#ffffff"/><stop offset=".66" stop-color="#bcd6ef"/>
+            <stop offset="1" stop-color="#4f7aa8"/>
+          </linearGradient>
+          <radialGradient id="ember" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#fff3e6"/><stop offset=".28" stop-color="#ff9a4d"/>
+            <stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <circle cx="100" cy="55" r="27" fill="url(#ember)"/>
+        <path d="M44,55 C44,29 73,29 100,55 C127,81 156,81 156,55 C156,29 127,29 100,55 C73,81 44,81 44,55 Z"
+              fill="none" stroke="url(#chrome)" stroke-width="11" stroke-linecap="round" filter="url(#soft)"/>
+      </svg>`;
+  }
+
   // ===== 0. INTRO / opt-in hook =====
   function intro() {
     const c = CONFIG.intro;
     screen(`
+      ${infinityMark()}
       <div class="eyebrow">${esc(c.eyebrow)}</div>
       <h1 class="title">${esc(c.headline)} <span class="accent shimmer">${esc(c.headlineAccent)}</span></h1>
       <p class="lede">${esc(c.subhead)}</p>
