@@ -1,0 +1,447 @@
+/* LtL Free Lead Magnet — app logic (vanilla JS, no build step) */
+(function () {
+  "use strict";
+  const $app = document.getElementById("app");
+  const $topbar = document.getElementById("topbar");
+  const $progress = document.getElementById("progressFill");
+  const $toast = document.getElementById("toast");
+  const STORE_KEY = "ltl_leadmagnet_v1";
+
+  // ---------- state ----------
+  const params = new URLSearchParams(location.search);
+  const state = loadState() || {
+    selected: [],
+    other: "",
+    believedLeak: "",
+    hours: {},          // id -> {value, cadence}
+    payRate: "",
+    isTeam: false,
+    teamAvg: "",
+    name: params.get("name") || "",
+    email: params.get("email") || "",
+    captured: false,
+    ranPrompts: [],
+  };
+  let step = 0;
+
+  // ---------- helpers ----------
+  function saveState() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+  function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { return null; } }
+  const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  function toast(msg) { $toast.textContent = msg; $toast.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => $toast.classList.remove("show"), 2200); }
+  function weeklyHours(h) { if (!h) return 0; const v = parseFloat(h.value) || 0; return h.cadence === "day" ? v * 5 : v; }
+
+  // ---------- the math ----------
+  function computeRows() {
+    const rate = parseFloat(state.payRate) || 0;
+    const rows = state.selected.map((id) => {
+      const t = CONFIG.tasks.find((x) => x.id === id);
+      const wk = weeklyHours(state.hours[id]);
+      const recoveredWk = wk * t.recoverPct;
+      const annual = recoveredWk * rate * 52;
+      return { task: t, weeklyHours: wk, recoverPct: t.recoverPct, recoveredWk, rate, annual };
+    });
+    rows.sort((a, b) => b.annual - a.annual);
+    const top2 = rows.slice(0, 2);
+    const leakTotalYr = top2.reduce((s, r) => s + r.annual, 0);
+    return { rows, top2, leakTotalYr };
+  }
+
+  // ---------- navigation ----------
+  const STEPS = ["intro", "tasks", "gutread", "hours", "rates", "meter", "gate", "results", "prompts", "bridge"];
+  function go(i) { step = Math.max(0, Math.min(STEPS.length - 1, i)); saveState(); render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function next() { go(step + 1); }
+  function back() { go(step - 1); }
+
+  // ---------- render ----------
+  function render() {
+    const name = STEPS[step];
+    $topbar.hidden = name === "intro";
+    const pct = step === 0 ? 0 : (step / (STEPS.length - 1)) * 100;
+    $progress.style.width = pct + "%";
+    ({ intro, tasks, gutread, hours, rates, meter, gate, results, prompts, bridge })[name]();
+  }
+
+  function screen(html) { $app.innerHTML = `<section class="screen">${html}</section>`; }
+
+  // ===== 0. INTRO / opt-in hook =====
+  function intro() {
+    const c = CONFIG.intro;
+    screen(`
+      <div class="eyebrow">${esc(c.eyebrow)}</div>
+      <h1 class="title">${esc(c.headline)}<span class="accent">${esc(c.headlineAccent)}</span></h1>
+      <p class="lede">${esc(c.subhead)}</p>
+      <p class="sub">${esc(c.agitation)}</p>
+      <ul class="bullets">${c.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
+      <p class="sub" style="color:var(--ink)">${esc(c.turn)}</p>
+      <div class="stack"><button class="btn" id="go">${esc(c.cta)}</button></div>
+      <p class="privacy">No signup to start. Takes about 2 minutes.</p>
+    `);
+    document.getElementById("go").onclick = next;
+  }
+
+  // ===== 1. NAME THE TIME-EATERS =====
+  function tasks() {
+    screen(`
+      <div class="step-label">Step 1 of 7</div>
+      <h2 class="title">Which of these still land on <em>your</em> desk?</h2>
+      <p class="sub">Pick the tasks you're still handling yourself. (Choose any that fit.)</p>
+      <div class="stack" id="list">
+        ${CONFIG.tasks.map((t) => `
+          <button class="choice ${state.selected.includes(t.id) ? "sel" : ""}" data-id="${t.id}">
+            <span class="box"></span>
+            <span class="c-main"><span class="c-label">${esc(t.label)}</span><span class="c-hint">${esc(t.hint)}</span></span>
+          </button>`).join("")}
+        <label class="field" style="margin-top:4px">
+          <span class="lbl">Something else? <small>(optional)</small></span>
+          <input type="text" id="other" placeholder="e.g. payroll, bookkeeping…" value="${esc(state.other)}" />
+        </label>
+      </div>
+      <div class="btn-row">
+        <button class="btn secondary back" id="back">Back</button>
+        <button class="btn" id="nextBtn" ${state.selected.length ? "" : "disabled"}>Continue</button>
+      </div>
+    `);
+    document.querySelectorAll(".choice[data-id]").forEach((el) => {
+      el.onclick = () => {
+        const id = el.dataset.id;
+        const i = state.selected.indexOf(id);
+        if (i >= 0) state.selected.splice(i, 1); else state.selected.push(id);
+        el.classList.toggle("sel");
+        document.getElementById("nextBtn").disabled = state.selected.length === 0;
+        saveState();
+      };
+    });
+    document.getElementById("other").oninput = (e) => { state.other = e.target.value; saveState(); };
+    document.getElementById("back").onclick = back;
+    document.getElementById("nextBtn").onclick = () => { if (state.selected.length) next(); };
+  }
+
+  // ===== 2. GUT READ (before any number) =====
+  function gutread() {
+    screen(`
+      <div class="step-label">Step 2 of 7</div>
+      <h2 class="title">Before we run the numbers —</h2>
+      <p class="sub">Which of those feels like your <strong>biggest</strong> leak, and why? Trust your gut.</p>
+      <label class="field">
+        <textarea id="gut" placeholder="e.g. Email — I lose my mornings to it and it never ends…">${esc(state.believedLeak)}</textarea>
+      </label>
+      <p class="note">We'll compare your gut read to what the numbers actually say.</p>
+      <div class="btn-row">
+        <button class="btn secondary back" id="back">Back</button>
+        <button class="btn" id="next">Continue</button>
+      </div>
+    `);
+    document.getElementById("gut").oninput = (e) => { state.believedLeak = e.target.value; saveState(); };
+    document.getElementById("back").onclick = back;
+    document.getElementById("next").onclick = next;
+  }
+
+  // ===== 3. HOURS PER TASK =====
+  function hours() {
+    const rows = state.selected.map((id) => {
+      const t = CONFIG.tasks.find((x) => x.id === id);
+      if (!state.hours[id]) state.hours[id] = { value: t.hoursDefault, cadence: t.cadence };
+      const h = state.hours[id];
+      return `
+        <div class="hours-row">
+          <span class="hr-name">${esc(t.label)}</span>
+          <input type="number" min="0" step="0.5" value="${esc(h.value)}" data-id="${id}" />
+          <span class="seg" data-id="${id}">
+            <button data-cad="day" class="${h.cadence === "day" ? "on" : ""}">/day</button>
+            <button data-cad="week" class="${h.cadence === "week" ? "on" : ""}">/week</button>
+          </span>
+        </div>`;
+    }).join("");
+    screen(`
+      <div class="step-label">Step 3 of 7</div>
+      <h2 class="title">Roughly how long does each take?</h2>
+      <p class="sub">Best guess is fine. Use <strong>/day</strong> for things you do daily, <strong>/week</strong> for weekly.</p>
+      <div class="card" style="margin-top:18px">${rows}</div>
+      <div class="btn-row">
+        <button class="btn secondary back" id="back">Back</button>
+        <button class="btn" id="next">Continue</button>
+      </div>
+    `);
+    document.querySelectorAll('.hours-row input').forEach((inp) => {
+      inp.oninput = (e) => { state.hours[e.target.dataset.id].value = e.target.value; saveState(); };
+    });
+    document.querySelectorAll('.seg').forEach((seg) => {
+      seg.querySelectorAll("button").forEach((b) => {
+        b.onclick = () => {
+          state.hours[seg.dataset.id].cadence = b.dataset.cad;
+          seg.querySelectorAll("button").forEach((x) => x.classList.remove("on"));
+          b.classList.add("on"); saveState();
+        };
+      });
+    });
+    document.getElementById("back").onclick = back;
+    document.getElementById("next").onclick = next;
+  }
+
+  // ===== 4. PAY RATES =====
+  function rates() {
+    screen(`
+      <div class="step-label">Step 4 of 7</div>
+      <h2 class="title">What's an hour of your time worth?</h2>
+      <p class="sub">This is what turns hours into dollars. A rough number is fine.</p>
+      <label class="field">
+        <span class="lbl">Your effective pay rate <small>(per hour)</small></span>
+        <div class="input-row"><span class="prefix">$</span><input class="grow" type="number" min="0" step="5" id="pay" placeholder="e.g. 150" value="${esc(state.payRate)}" /></div>
+      </label>
+      <label class="field" style="margin-top:20px">
+        <span class="lbl">Do you have a team doing some of this too?</span>
+      </label>
+      <div class="stack" style="margin-top:8px">
+        <button class="choice radio ${state.isTeam ? "" : "sel"}" data-team="0"><span class="box"></span><span class="c-main"><span class="c-label">Just me for now</span></span></button>
+        <button class="choice radio ${state.isTeam ? "sel" : ""}" data-team="1"><span class="box"></span><span class="c-main"><span class="c-label">I've got a team</span></span></button>
+      </div>
+      <div id="teamWrap" style="${state.isTeam ? "" : "display:none"}">
+        <label class="field">
+          <span class="lbl">Team's average pay rate <small>(per hour — optional)</small></span>
+          <div class="input-row"><span class="prefix">$</span><input class="grow" type="number" min="0" step="5" id="teamavg" placeholder="e.g. 40" value="${esc(state.teamAvg)}" /></div>
+        </label>
+      </div>
+      <p class="note">Heads up: the free read shows <strong>your own</strong> waste. Your team's multiplier is in the full Efficiency Briefing.</p>
+      <div class="btn-row">
+        <button class="btn secondary back" id="back">Back</button>
+        <button class="btn" id="next" ${state.payRate ? "" : "disabled"}>See my number</button>
+      </div>
+    `);
+    const pay = document.getElementById("pay");
+    pay.oninput = (e) => { state.payRate = e.target.value; document.getElementById("next").disabled = !state.payRate; saveState(); };
+    document.querySelectorAll("[data-team]").forEach((b) => {
+      b.onclick = () => {
+        state.isTeam = b.dataset.team === "1";
+        document.querySelectorAll("[data-team]").forEach((x) => x.classList.remove("sel"));
+        b.classList.add("sel");
+        document.getElementById("teamWrap").style.display = state.isTeam ? "" : "none";
+        saveState();
+      };
+    });
+    const ta = document.getElementById("teamavg");
+    if (ta) ta.oninput = (e) => { state.teamAvg = e.target.value; saveState(); };
+    document.getElementById("back").onclick = back;
+    document.getElementById("next").onclick = () => { if (state.payRate) next(); };
+  }
+
+  // ===== 5. THE LIVE METER (your waste only) + teaser =====
+  function meter() {
+    const { top2, leakTotalYr } = computeRows();
+    const teaser = state.isTeam ? CONFIG.teasers.team : CONFIG.teasers.solo;
+    const one = top2[0];
+    screen(`
+      <div class="step-label">Step 5 of 7</div>
+      <h2 class="title">Here's what those tasks cost you —</h2>
+      <p class="sub">Just from the time you could hand to AI. Your waste only.</p>
+      <div class="card" style="margin-top:18px">
+        <div class="meter">
+          <div class="money" id="ticker">$0</div>
+          <div class="per">leaking out of your year</div>
+        </div>
+        ${one ? `<div class="mathline">${esc(one.task.label)}: <b>${one.weeklyHours.toFixed(1)} hrs/wk</b> × <b>${Math.round(one.recoverPct * 100)}%</b> recoverable × <b>${money(one.rate)}</b>/hr × 52 = <b>${money(one.annual)}/yr</b></div>` : ""}
+        <div class="tick">Built from your top 2 leaks — the math is shown, nothing hidden.</div>
+      </div>
+      <div class="teaser">${esc(teaser)}</div>
+      <div class="btn-row">
+        <button class="btn secondary back" id="back">Back</button>
+        <button class="btn" id="next">Unlock my full results →</button>
+      </div>
+    `);
+    countUp(document.getElementById("ticker"), leakTotalYr);
+    document.getElementById("back").onclick = back;
+    document.getElementById("next").onclick = next;
+  }
+
+  function countUp(el, target) {
+    const dur = 1100, t0 = performance.now();
+    function frame(t) {
+      const p = Math.min(1, (t - t0) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = money(target * eased);
+      if (p < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ===== 6. THE EMAIL GATE (lead capture) =====
+  function gate() {
+    const { leakTotalYr } = computeRows();
+    screen(`
+      <div class="step-label">Step 6 of 7</div>
+      <h2 class="title">Where should we send your results?</h2>
+      <p class="sub">Your full breakdown, your top 2 priorities, and <strong>2 prompts you can run today</strong> — sent to your inbox and shown on the next screen.</p>
+      <div class="card" style="margin-top:18px">
+        <div class="badge">${money(leakTotalYr)}/yr identified</div>
+        <label class="field"><span class="lbl">First name</span>
+          <input type="text" id="name" placeholder="Your first name" value="${esc(state.name)}" /></label>
+        <label class="field"><span class="lbl">Email</span>
+          <input type="email" id="email" placeholder="you@company.com" value="${esc(state.email)}" /></label>
+        <div class="stack" style="margin-top:18px">
+          <button class="btn" id="reveal" disabled>Show me my results →</button>
+        </div>
+        <div class="trust">🔒 We'll never spam you. One-click unsubscribe.</div>
+      </div>
+      <div class="btn-row"><button class="btn secondary back" id="back">Back</button></div>
+    `);
+    const nameEl = document.getElementById("name");
+    const emailEl = document.getElementById("email");
+    const btn = document.getElementById("reveal");
+    const validate = () => { btn.disabled = !(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailEl.value.trim())); };
+    nameEl.oninput = (e) => { state.name = e.target.value; saveState(); };
+    emailEl.oninput = (e) => { state.email = e.target.value.trim(); validate(); saveState(); };
+    validate();
+    document.getElementById("back").onclick = back;
+    btn.onclick = async () => {
+      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
+      await captureLead();
+      next();
+    };
+  }
+
+  // ---- the lead-capture call (the gateway) ----
+  async function captureLead() {
+    const { top2, leakTotalYr } = computeRows();
+    const payload = {
+      source: "lead-magnet",
+      name: state.name,
+      email: state.email,
+      believedLeak: state.believedLeak,
+      leakTotalYr: Math.round(leakTotalYr),
+      isTeam: state.isTeam,
+      teamAvgRate: state.teamAvg || null,
+      payRate: state.payRate || null,
+      numberOneMove: top2[0] ? top2[0].task.label : null,
+      top2: top2.map((r) => ({ task: r.task.label, annual: Math.round(r.annual) })),
+      tasksSelected: state.selected,
+      otherTask: state.other || null,
+      tags: [CONFIG.capture.leadTag],
+      capturedAt: new Date().toISOString(),
+    };
+    state.captured = true; saveState();
+    try {
+      const res = await fetch(CONFIG.capture.endpoint, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("bad status " + res.status);
+    } catch (e) {
+      // Never block the felt win — queue locally so no lead is lost.
+      try {
+        const q = JSON.parse(localStorage.getItem("ltl_lead_queue") || "[]");
+        q.push(payload); localStorage.setItem("ltl_lead_queue", JSON.stringify(q));
+      } catch (_) {}
+    }
+  }
+
+  // ===== 7. RESULTS + ROADMAP =====
+  function results() {
+    const { top2, leakTotalYr } = computeRows();
+    const tr = CONFIG.translations;
+    const monthly = leakTotalYr / 12;
+    const hoursWk = top2.reduce((s, r) => s + r.recoveredWk, 0);
+    const hirePct = Math.round((leakTotalYr / tr.firstHireAnnualCost) * 100);
+    const one = top2[0];
+    const gutCmp = state.believedLeak
+      ? `<p class="gutline">You felt it was: “${esc(state.believedLeak.slice(0, 90))}”. The numbers point to <strong style="color:var(--gold)">${esc(one.task.label)}</strong> as your #1 move.</p>` : "";
+    screen(`
+      <div class="step-label">Step 7 of 7 — your results</div>
+      <h2 class="title">${esc(state.name || "Here")} — this is your time leak.</h2>
+      <div class="card" style="margin-top:16px">
+        <div class="meter"><div class="money">${money(leakTotalYr)}</div><div class="per">per year, from your top 2 tasks alone</div></div>
+        <div class="mathline">That's about <b>${money(monthly)}/month</b> · <b>${hoursWk.toFixed(1)} hours back every week</b>${hirePct > 0 ? ` · enough to fund <b>~${Math.min(hirePct, 100)}%</b> of a first hire` : ""}</div>
+      </div>
+      <h3 style="margin-top:26px;font-size:20px">Fix these first</h3>
+      ${top2.map((r, i) => `
+        <div class="priority ${i === 0 ? "one" : ""}">
+          <span class="rank">${i + 1}</span>
+          <span class="p-main"><strong>${esc(r.task.label)}</strong><br><span class="c-hint" style="color:var(--muted)">${r.weeklyHours.toFixed(1)} hrs/wk · ${Math.round(r.recoverPct * 100)}% recoverable</span></span>
+          <span class="p-val">${money(r.annual)}/yr</span>
+        </div>`).join("")}
+      ${one ? `<div class="teaser"><strong>Start here:</strong> ${esc(one.task.label)} — worth ${money(one.annual)}/yr on its own.</div>` : ""}
+      ${gutCmp}
+      <div class="btn-row"><button class="btn" id="next">Get my 2 prompts →</button></div>
+    `);
+    document.getElementById("next").onclick = next;
+  }
+
+  // ===== 8. THE 2 PROMPTS (copy-paste) =====
+  function prompts() {
+    const { top2 } = computeRows();
+    screen(`
+      <div class="step-label">Your install-today prompts</div>
+      <h2 class="title">Two prompts you can run right now.</h2>
+      <p class="sub">Mapped to your top 2 leaks. Copy one, paste it into ChatGPT, Claude or Gemini, and fill in the <span style="color:var(--gold)">[brackets]</span>. Edit freely — they're a starting point.</p>
+      ${top2.map((r) => `
+        <div class="prompt-card">
+          <div class="p-head">
+            <span class="p-name">${esc(r.task.promptName)}</span>
+            <button class="copy-btn" data-id="${r.task.id}">Copy prompt</button>
+          </div>
+          <div class="c-hint" style="color:var(--muted);margin-bottom:8px">For: ${esc(r.task.label)}</div>
+          <pre data-prompt="${r.task.id}">${esc(r.task.prompt)}</pre>
+        </div>`).join("")}
+      <p class="note">These are the original Hour-Back Pack prompts. The full pack — built into reusable projects that run on a schedule — is in the Efficiency Briefing.</p>
+      <div class="btn-row">
+        <button class="btn secondary back" id="back">Back</button>
+        <button class="btn" id="next">What's next →</button>
+      </div>
+    `);
+    document.querySelectorAll(".copy-btn").forEach((b) => {
+      b.onclick = async () => {
+        const id = b.dataset.id;
+        const text = CONFIG.tasks.find((t) => t.id === id).prompt;
+        try { await navigator.clipboard.writeText(text); }
+        catch (e) {
+          const pre = document.querySelector(`pre[data-prompt="${id}"]`);
+          const range = document.createRange(); range.selectNode(pre);
+          const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+          try { document.execCommand("copy"); } catch (_) {} sel.removeAllRanges();
+        }
+        b.textContent = "Copied ✓"; b.classList.add("done");
+        toast("Prompt copied — paste it into your AI");
+        if (!state.ranPrompts.includes(id)) { state.ranPrompts.push(id); saveState(); flagRanPrompt(id); }
+      };
+    });
+    document.getElementById("back").onclick = back;
+    document.getElementById("next").onclick = next;
+  }
+
+  function flagRanPrompt(id) {
+    try {
+      fetch(CONFIG.capture.endpoint, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: "lead-magnet", event: "ran-prompt", email: state.email, promptId: id, tags: [CONFIG.capture.ranPromptTag] }),
+        keepalive: true,
+      });
+    } catch (e) {}
+  }
+
+  // ===== 9. THE BRIDGE → $97 Briefing =====
+  function bridge() {
+    const b = CONFIG.bridge;
+    screen(`
+      <div class="eyebrow">One leak down</div>
+      <h2 class="title">${esc(b.line)}</h2>
+      <p class="lede">${esc(b.sub)}</p>
+      <div class="stack">
+        <a class="btn" href="${esc(CONFIG.brand.briefingUrl)}" target="_blank" rel="noopener">${esc(b.cta)}</a>
+        <button class="btn secondary" id="restart2">Start over</button>
+      </div>
+      <p class="privacy" style="margin-top:24px">${esc(CONFIG.brand.signoff)}</p>
+    `);
+    document.getElementById("restart2").onclick = restart;
+  }
+
+  // ---------- restart ----------
+  function restart() {
+    localStorage.removeItem(STORE_KEY);
+    location.href = location.pathname;
+  }
+  document.getElementById("restartBtn").onclick = restart;
+
+  // ---------- boot ----------
+  // resume where they left off if mid-flow
+  if (state.selected.length && !state.captured) step = 1;
+  render();
+})();

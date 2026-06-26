@@ -1,0 +1,7 @@
+{
+  "name": "ltl-lead-magnet",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Limited to Limitless — free lead magnet (time-leak read + 2 prompts) with email-capture gateway."
+}

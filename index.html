@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Where does your time go? — Limited to Limitless</title>
+  <meta name="description" content="A 2-minute read on where your hours leak — plus two prompts you can run today." />
+  <meta property="og:title" content="Where does your time go?" />
+  <meta property="og:description" content="See where your hours leak — and take two tasks off your plate today." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar" id="topbar" hidden>
+    <div class="topbar-inner">
+      <span class="wordmark">Limited <span class="amp">to</span> Limitless</span>
+      <div class="progress" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+      <button class="ghost-btn" id="restartBtn" type="button" title="Start over">Restart</button>
+    </div>
+  </header>
+
+  <main id="app" class="app"><!-- screens render here --></main>
+
+  <footer class="footer">Be Limitless. Be Bold.</footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
