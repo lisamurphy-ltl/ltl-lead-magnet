@@ -45,18 +45,14 @@ const CONFIG = {
 
   // ---- COPY: opt-in / intro (PRD §6, cold + problem-aware) -----------
   intro: {
-    eyebrow: "A 2-minute check — not a course, not a manual",
+    eyebrow: "Free · about 2 minutes · no signup to start",
     headline: "The work that lands back on your desk every week.",
     headlineAccent: "Let's take it off your plate.",
-    subhead:
-      "A 2-minute read on where your hours actually leak — plus two prompts you can run today.",
-    agitation:
-      "You hired people. You still check everything. The same tasks keep circling back to you, and every week they cost you the same hours over again.",
-    turn: "There's a way to see exactly where it's going — and start fixing it in the next few minutes.",
+    subhead: "See where your hours really go — and get 2 prompts to win them back today.",
     bullets: [
-      "A straight read on how ready your operation is to hand work to AI.",
-      "The exact tasks quietly eating your week — ranked by what they cost you.",
-      "Two prompts that produce a real result today.",
+      "Where your hours actually go",
+      "What it's quietly costing you — in real dollars",
+      "2 AI prompts to start fixing it today",
     ],
     cta: "Show me where my hours go →",
   },

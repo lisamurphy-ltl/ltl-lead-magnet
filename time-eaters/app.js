@@ -70,11 +70,9 @@
     const c = CONFIG.intro;
     screen(`
       <div class="eyebrow">${esc(c.eyebrow)}</div>
-      <h1 class="title">${esc(c.headline)}<span class="accent">${esc(c.headlineAccent)}</span></h1>
+      <h1 class="title">${esc(c.headline)} <span class="accent shimmer">${esc(c.headlineAccent)}</span></h1>
       <p class="lede">${esc(c.subhead)}</p>
-      <p class="sub">${esc(c.agitation)}</p>
       <ul class="bullets">${c.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
-      <p class="sub" style="color:var(--ink)">${esc(c.turn)}</p>
       <div class="stack"><button class="btn" id="go">${esc(c.cta)}</button></div>
       <p class="privacy">No signup to start. Takes about 2 minutes.</p>
     `);
