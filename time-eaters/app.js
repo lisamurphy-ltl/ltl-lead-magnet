@@ -75,27 +75,37 @@
   function intro() {
     const c = CONFIG.intro;
     screen(`
+      <header class="lp-head">
+        <span class="wordmark">Limited <span class="amp">to</span> Limitless</span>
+        <button class="btn sm" id="goTop" type="button">${esc(c.ctaShort)}</button>
+      </header>
       <h1 class="sr-only">Free Time Calculator — see where your hours go and win them back</h1>
       <section class="hero">
         <div class="hero-halo" aria-hidden="true"></div>
         <span class="eyebrow pill">${esc(c.eyebrow)}</span>
         ${heroImg()}
-        <p class="hero-h shimmer">${esc(c.headlineAccent)}</p>
+        <p class="hero-h">${esc(c.headline)} <span class="shimmer">${esc(c.headlineAccent)}</span></p>
         <p class="hero-sub">${esc(c.subhead)}</p>
-        <div class="hero-cta"><button class="btn lg" id="go">${esc(c.cta)}</button></div>
-        <p class="privacy">🔒 No signup to start · about 2 minutes</p>
-        <button class="scroll-cue" id="scrollDown" type="button" aria-label="See what you get">▾</button>
+        <button class="scroll-cue" id="scrollDown" type="button" aria-label="Read more">▾</button>
       </section>
-      <section class="value">
-        <h2 class="value-title">In about 2 minutes, you'll walk away with:</h2>
-        <ul class="bullets">${c.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
-        <div class="stack"><button class="btn lg" id="go2">${esc(c.cta)}</button></div>
+      <section class="lp">
+        <p class="lp-agitate">${esc(c.agitation)}</p>
+        <p class="lp-turn">${esc(c.turn)}</p>
+        <div class="card lp-card">
+          <h2 class="lp-h">${esc(c.whatTitle)}</h2>
+          <ul class="bullets">${c.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
+        </div>
+        <blockquote class="lp-guide">“${esc(c.guide)}”<cite>${esc(c.guideName)}</cite></blockquote>
+        <div class="final-cta">
+          <button class="btn lg" id="go" type="button">${esc(c.cta)}</button>
+          <p class="privacy">🔒 ${esc(c.eyebrow)}</p>
+        </div>
       </section>
     `);
+    document.getElementById("goTop").onclick = next;
     document.getElementById("go").onclick = next;
-    document.getElementById("go2").onclick = next;
     document.getElementById("scrollDown").onclick = () =>
-      document.querySelector(".value").scrollIntoView({ behavior: "smooth", block: "start" });
+      document.querySelector(".lp").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   // ===== 1. NAME THE TIME-EATERS =====

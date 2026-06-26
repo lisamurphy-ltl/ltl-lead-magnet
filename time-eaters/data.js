@@ -46,14 +46,20 @@ const CONFIG = {
   // ---- COPY: opt-in / intro (PRD §6, cold + problem-aware) -----------
   intro: {
     eyebrow: "Free · about 2 minutes · no signup to start",
+    ctaShort: "Start free →",
     headline: "The work that lands back on your desk every week.",
     headlineAccent: "Let's take it off your plate.",
-    subhead: "The same tasks keep landing back on your desk. See where your hours really go — and get 2 prompts to win them back today.",
+    subhead: "A 2-minute check that shows where your hours leak — plus two prompts you can run today. Not a course. Not a manual.",
+    agitation: "You hired people. You're still the one checking everything. The same tasks circle back to your desk, and every week they quietly cost you the same hours — and the same money — all over again.",
+    turn: "There's a faster way. See exactly where your time is going, and start plugging the biggest leaks in the next few minutes.",
+    whatTitle: "Here's what you'll walk away with",
     bullets: [
-      "Where your hours actually go",
-      "What it's quietly costing you — in real dollars",
-      "2 AI prompts to start fixing it today",
+      "A straight read on how ready your operation is to hand work to AI.",
+      "The exact tasks quietly eating your week — ranked by what they cost you.",
+      "Two prompts you can run today — real, usable output, not theory.",
     ],
+    guide: "I've run the kind of operation you're running — and rebuilt it so it runs without me.",
+    guideName: "— Lisa Murphy, MBA · Limited to Limitless",
     cta: "Show me where my hours go →",
   },
 
