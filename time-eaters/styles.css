@@ -99,7 +99,13 @@ textarea{min-height:96px;resize:vertical}
 .prefix + input{border-radius:0 12px 12px 0}
 
 .hours-row{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05)}
-.hours-row .hr-name{flex:1;font-weight:600;font-size:15px}
+.hours-row .hr-name{flex:1;font-weight:600;font-size:15px;display:flex;flex-direction:column}
+.hr-wk{font-weight:400;font-size:12px;color:var(--gold);margin-top:3px}
+.helper{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.5}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{background:var(--navy-2);border:1px solid var(--line);color:var(--ink);border-radius:99px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--gold);color:var(--gold)}
+.chip.sel{background:var(--gold);color:var(--navy);border-color:var(--gold)}
 .hours-row input[type=number]{width:74px;text-align:center}
 
 /* ---------- buttons ---------- */

@@ -85,8 +85,8 @@
   function tasks() {
     screen(`
       <div class="step-label">Step 1 of 7</div>
-      <h2 class="title">Which of these still land on <em>your</em> desk?</h2>
-      <p class="sub">Pick the tasks you're still handling yourself. (Choose any that fit.)</p>
+      <h2 class="title">Which of these do <em>you</em> still do?</h2>
+      <p class="sub">Tap every one you still handle yourself — even if you only do part of it. Pick as many as you want.</p>
       <div class="stack" id="list">
         ${CONFIG.tasks.map((t) => `
           <button class="choice ${state.selected.includes(t.id) ? "sel" : ""}" data-id="${t.id}">
@@ -94,7 +94,7 @@
             <span class="c-main"><span class="c-label">${esc(t.label)}</span><span class="c-hint">${esc(t.hint)}</span></span>
           </button>`).join("")}
         <label class="field" style="margin-top:4px">
-          <span class="lbl">Something else? <small>(optional)</small></span>
+          <span class="lbl">Something else eating your time? <small>(optional — type it here)</small></span>
           <input type="text" id="other" placeholder="e.g. payroll, bookkeeping…" value="${esc(state.other)}" />
         </label>
       </div>
@@ -122,12 +122,12 @@
   function gutread() {
     screen(`
       <div class="step-label">Step 2 of 7</div>
-      <h2 class="title">Before we run the numbers —</h2>
-      <p class="sub">Which of those feels like your <strong>biggest</strong> leak, and why? Trust your gut.</p>
+      <h2 class="title">Before we do the math —</h2>
+      <p class="sub">Which one feels like your <strong>biggest</strong> time-suck, and why? Don't overthink it. Go with your gut.</p>
       <label class="field">
-        <textarea id="gut" placeholder="e.g. Email — I lose my mornings to it and it never ends…">${esc(state.believedLeak)}</textarea>
+        <textarea id="gut" placeholder="e.g. Email — I lose my whole morning to it and it never ends…">${esc(state.believedLeak)}</textarea>
       </label>
-      <p class="note">We'll compare your gut read to what the numbers actually say.</p>
+      <p class="note">One line is plenty — or skip it. Later, we'll show you whether the numbers agree with your gut.</p>
       <div class="btn-row">
         <button class="btn secondary back" id="back">Back</button>
         <button class="btn" id="next">Continue</button>
@@ -146,33 +146,41 @@
       const h = state.hours[id];
       return `
         <div class="hours-row">
-          <span class="hr-name">${esc(t.label)}</span>
-          <input type="number" min="0" step="0.5" value="${esc(h.value)}" data-id="${id}" />
+          <div class="hr-name">${esc(t.label)}<span class="hr-wk" data-wk="${id}"></span></div>
+          <input type="number" min="0" step="0.5" value="${esc(h.value)}" data-id="${id}" aria-label="hours for ${esc(t.label)}" />
           <span class="seg" data-id="${id}">
-            <button data-cad="day" class="${h.cadence === "day" ? "on" : ""}">/day</button>
-            <button data-cad="week" class="${h.cadence === "week" ? "on" : ""}">/week</button>
+            <button data-cad="day" class="${h.cadence === "day" ? "on" : ""}">a day</button>
+            <button data-cad="week" class="${h.cadence === "week" ? "on" : ""}">a week</button>
           </span>
         </div>`;
     }).join("");
     screen(`
       <div class="step-label">Step 3 of 7</div>
-      <h2 class="title">Roughly how long does each take?</h2>
-      <p class="sub">Best guess is fine. Use <strong>/day</strong> for things you do daily, <strong>/week</strong> for weekly.</p>
+      <h2 class="title">How long does each one take you?</h2>
+      <p class="sub">Just your best guess — round numbers are fine. Tap <strong>a day</strong> if you do it most days (then put the hours for <em>one</em> day). Tap <strong>a week</strong> if it's more of a weekly thing.</p>
       <div class="card" style="margin-top:18px">${rows}</div>
+      <p class="note">Example: 1 hour <strong>a day</strong> on email = about 5 hours a week.</p>
       <div class="btn-row">
         <button class="btn secondary back" id="back">Back</button>
         <button class="btn" id="next">Continue</button>
       </div>
     `);
+    const updateWk = (id) => {
+      const el = document.querySelector(`[data-wk="${id}"]`);
+      if (!el) return;
+      const wk = weeklyHours(state.hours[id]);
+      el.textContent = wk > 0 ? `≈ ${(+wk.toFixed(1))} hrs/week` : "";
+    };
+    state.selected.forEach(updateWk);
     document.querySelectorAll('.hours-row input').forEach((inp) => {
-      inp.oninput = (e) => { state.hours[e.target.dataset.id].value = e.target.value; saveState(); };
+      inp.oninput = (e) => { state.hours[e.target.dataset.id].value = e.target.value; updateWk(e.target.dataset.id); saveState(); };
     });
     document.querySelectorAll('.seg').forEach((seg) => {
       seg.querySelectorAll("button").forEach((b) => {
         b.onclick = () => {
           state.hours[seg.dataset.id].cadence = b.dataset.cad;
           seg.querySelectorAll("button").forEach((x) => x.classList.remove("on"));
-          b.classList.add("on"); saveState();
+          b.classList.add("on"); updateWk(seg.dataset.id); saveState();
         };
       });
     });
@@ -184,33 +192,41 @@
   function rates() {
     screen(`
       <div class="step-label">Step 4 of 7</div>
-      <h2 class="title">What's an hour of your time worth?</h2>
-      <p class="sub">This is what turns hours into dollars. A rough number is fine.</p>
+      <h2 class="title">What's one hour of your time worth?</h2>
+      <p class="sub">This turns your hours into dollars. A rough number is perfect.</p>
       <label class="field">
-        <span class="lbl">Your effective pay rate <small>(per hour)</small></span>
-        <div class="input-row"><span class="prefix">$</span><input class="grow" type="number" min="0" step="5" id="pay" placeholder="e.g. 150" value="${esc(state.payRate)}" /></div>
+        <span class="lbl">One hour of your time = $<small> per hour</small></span>
+        <div class="input-row"><span class="prefix">$</span><input class="grow" type="number" min="0" step="5" id="pay" placeholder="type a number, e.g. 150" value="${esc(state.payRate)}" /></div>
+        <div class="chips" id="payChips">
+          ${[75,150,250,400].map((v)=>`<button class="chip ${String(state.payRate)===String(v)?"sel":""}" data-pay="${v}">$${v}</button>`).join("")}
+        </div>
+        <p class="helper">Not sure? Easy way to guess: <strong>what would you pay someone really good to do your job for an hour?</strong> Most owners land between $75 and $400.</p>
       </label>
-      <label class="field" style="margin-top:20px">
-        <span class="lbl">Do you have a team doing some of this too?</span>
+      <label class="field" style="margin-top:22px">
+        <span class="lbl">Do other people help with any of these?</span>
       </label>
       <div class="stack" style="margin-top:8px">
-        <button class="choice radio ${state.isTeam ? "" : "sel"}" data-team="0"><span class="box"></span><span class="c-main"><span class="c-label">Just me for now</span></span></button>
-        <button class="choice radio ${state.isTeam ? "sel" : ""}" data-team="1"><span class="box"></span><span class="c-main"><span class="c-label">I've got a team</span></span></button>
+        <button class="choice radio ${state.isTeam ? "" : "sel"}" data-team="0"><span class="box"></span><span class="c-main"><span class="c-label">It's just me right now</span></span></button>
+        <button class="choice radio ${state.isTeam ? "sel" : ""}" data-team="1"><span class="box"></span><span class="c-main"><span class="c-label">I have a team</span></span></button>
       </div>
       <div id="teamWrap" style="${state.isTeam ? "" : "display:none"}">
         <label class="field">
-          <span class="lbl">Team's average pay rate <small>(per hour — optional)</small></span>
-          <div class="input-row"><span class="prefix">$</span><input class="grow" type="number" min="0" step="5" id="teamavg" placeholder="e.g. 40" value="${esc(state.teamAvg)}" /></div>
+          <span class="lbl">What do you pay your team, on average? <small>(per hour — optional)</small></span>
+          <div class="input-row"><span class="prefix">$</span><input class="grow" type="number" min="0" step="5" id="teamavg" placeholder="a rough average, e.g. 40" value="${esc(state.teamAvg)}" /></div>
         </label>
       </div>
-      <p class="note">Heads up: the free read shows <strong>your own</strong> waste. Your team's multiplier is in the full Efficiency Briefing.</p>
+      <p class="note">This free read shows <strong>just your own</strong> wasted time. What it's costing across your whole team is in the full Efficiency Briefing.</p>
       <div class="btn-row">
         <button class="btn secondary back" id="back">Back</button>
         <button class="btn" id="next" ${state.payRate ? "" : "disabled"}>See my number</button>
       </div>
     `);
     const pay = document.getElementById("pay");
-    pay.oninput = (e) => { state.payRate = e.target.value; document.getElementById("next").disabled = !state.payRate; saveState(); };
+    const syncChips = () => document.querySelectorAll("#payChips .chip").forEach((c) => c.classList.toggle("sel", String(c.dataset.pay) === String(state.payRate)));
+    pay.oninput = (e) => { state.payRate = e.target.value; document.getElementById("next").disabled = !state.payRate; syncChips(); saveState(); };
+    document.querySelectorAll("#payChips .chip").forEach((c) => {
+      c.onclick = () => { state.payRate = c.dataset.pay; pay.value = c.dataset.pay; document.getElementById("next").disabled = false; syncChips(); saveState(); };
+    });
     document.querySelectorAll("[data-team]").forEach((b) => {
       b.onclick = () => {
         state.isTeam = b.dataset.team === "1";
