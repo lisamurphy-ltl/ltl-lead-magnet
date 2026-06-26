@@ -432,7 +432,7 @@
             <span class="p-name">${esc(r.task.promptName)}</span>
             <button class="copy-btn" data-id="${r.task.id}">Copy prompt</button>
           </div>
-          <div class="c-hint" style="color:var(--muted);margin-bottom:8px">For: ${esc(r.task.label)}</div>
+          <div class="c-hint" style="color:var(--muted);margin-bottom:8px">For: ${esc(r.task.label)}${r.task.savesNote ? ` · <span style="color:var(--gold)">${esc(r.task.savesNote)}</span>` : ""}</div>
           <pre data-prompt="${r.task.id}">${esc(r.task.prompt)}</pre>
         </div>`).join("")}
       <p class="note">These are the original Hour-Back Pack prompts. The full pack — built into reusable projects that run on a schedule — is in the Efficiency Briefing.</p>

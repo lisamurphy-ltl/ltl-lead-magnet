@@ -4,18 +4,18 @@
    Lisa: this is the ONE file to edit for content + capture settings.
    Everything below is plain English. Change text inside the quotes.
 
-   ⚠ PLACEHOLDER CONTENT: the 10 tasks, their recover-% and the prompt
-   text are reasonable defaults grounded in the spec, NOT the final
-   Hour-Back Pack copy. Replace the `recoverPct`, `hoursDefault` and
-   `prompt` fields with the real Hour-Back Pack values when ready.
-   The math, flow and capture all work regardless of these numbers.
+   The 10 tasks + prompts below are the REAL Hour-Back Pack (copy-paste
+   prompts verbatim). `hoursDefault` (typical time spent) and `recoverPct`
+   (share AI gives back) are conservative estimates grounded in the pack's
+   documented time-saved ranges (shown as `savesNote`). Tune those two
+   numbers any time — the math, flow and capture all keep working.
    ===================================================================== */
 
 const CONFIG = {
   brand: {
     name: "Limited to Limitless",
     signoff: "Be Limitless. Be Bold.",
-    briefingUrl: "https://plan-to-profit.limitedtolimitless.com/plan_your_profits", // $97 Briefing / next step
+    briefingUrl: "https://hoursback.limitedtolimitless.com/TimeBriefSolution", // $97 Briefing / next step
   },
 
   // ---- LEAD CAPTURE -------------------------------------------------
@@ -61,139 +61,181 @@ const CONFIG = {
     cta: "Show me where my hours go →",
   },
 
-  // ---- The 10 Hour-Back tasks (PLACEHOLDER values — see warning above)
+  // ---- The 10 Hour-Back Pack tasks (real prompts) -------------------
   // recoverPct = share of that task's time AI gives back (0–1, never 1.0)
+  // savesNote  = the pack's documented time-saved range (for credibility)
   tasks: [
     {
       id: "inbox",
       label: "Email & inbox triage",
-      hint: "Sorting, replying, chasing — still doing it yourself",
-      hoursDefault: 5, cadence: "day",
-      recoverPct: 0.70,
-      promptName: "Inbox Triage Sorter",
+      hint: "Sorting, deciding and replying — every single day",
+      hoursDefault: 1, cadence: "day",
+      recoverPct: 0.45,
+      promptName: "The Inbox Triage Sorter",
+      savesNote: "Typically saves 15–30 min per inbox session",
       prompt:
-`You are my inbox chief of staff. I'll paste a batch of emails below.
-For each one, give me: (1) a one-line summary, (2) priority [Now / Today / This week / Delegate / Ignore],
-(3) a ready-to-send reply draft in my voice — [describe your tone in 3 words].
-Group the output by priority. My role: [your role]. My business: [what you do].
-Emails:
-[paste your emails here]`,
+`Act as my executive operations filter. Review the email or message below and sort it into one of five categories: Reply Now, Reply Later, Delegate, Archive, or Decision Needed. Then draft the next best action in my voice: direct, warm, and clear.
+
+Context about my business: [insert business type, audience, current priority]
+My communication style: [insert 3-5 words]
+Email/message: [paste message]
+
+Return: category, why, next action, draft reply if needed, and estimated time saved.`,
     },
     {
       id: "meetings",
-      label: "Meeting notes & follow-ups",
-      hint: "Writing up notes and chasing action items after every call",
+      label: "Meetings that run long",
+      hint: "Calls that drift because no one came with a decision",
       hoursDefault: 4, cadence: "week",
-      recoverPct: 0.60,
-      promptName: "Meeting Shrinker",
+      recoverPct: 0.35,
+      promptName: "The Meeting Shrinker",
+      savesNote: "Typically saves 30–60 min per meeting",
       prompt:
-`Turn this raw meeting transcript/notes into: (1) a 5-bullet summary,
-(2) a decisions list, (3) an action table [Owner | Task | Due date],
-(4) a short follow-up email to attendees in my voice.
-Context: meeting was about [topic]; attendees [names/roles].
-Notes:
-[paste your notes or transcript here]`,
+`Act as a meeting architect. Turn the meeting details below into a tight agenda designed to reach a decision or produce a clear next action.
+
+Meeting topic: [insert topic]
+Attendees: [insert names/roles]
+Current problem or decision: [insert issue]
+Time available: [insert time limit]
+
+Return: purpose, decision needed, time-blocked agenda, pre-meeting questions, async options, and follow-up template.`,
     },
     {
       id: "followups",
-      label: "Client & sales follow-ups",
-      hint: "Remembering who to chase and writing the nudge",
+      label: "Meeting notes & follow-ups",
+      hint: "Writing up who-owns-what after every call",
       hoursDefault: 3, cadence: "week",
-      recoverPct: 0.65,
-      promptName: "Follow-Up Loop Closer",
+      recoverPct: 0.50,
+      promptName: "The Follow-Up Loop Closer",
+      savesNote: "Typically saves 20–45 min per meeting",
       prompt:
-`Act as my follow-up assistant. Here is a list of people I owe a follow-up and where we left off.
-For each, write a short, warm, specific follow-up message in my voice [tone in 3 words],
-plus a suggested send-time. Keep each under 90 words.
-List:
-[name — last contact — what's outstanding]`,
+`Act as my post-meeting follow-up assistant. Based on the notes below, create a concise follow-up that confirms decisions, owners, deadlines, and unresolved questions.
+
+Meeting notes: [paste notes]
+People involved: [insert names/roles]
+Tone: direct, supportive, clear
+
+Return: decisions made, action items with owners/deadlines, open questions, risks, and a ready-to-send follow-up.`,
     },
     {
-      id: "proposals",
-      label: "Proposals & quotes",
-      hint: "Building each one mostly from scratch",
-      hoursDefault: 3, cadence: "week",
+      id: "referrals",
+      label: "Asking for referrals",
+      hint: "Drafting the ask so it actually lands",
+      hoursDefault: 1.5, cadence: "week",
       recoverPct: 0.55,
-      promptName: "Proposal Drafter",
+      promptName: "The Referral Ask Builder",
+      savesNote: "Typically saves 45–90 min per referral push",
       prompt:
-`Draft a proposal for [client] who needs [problem/outcome]. Use this structure:
-situation → desired outcome → our approach → scope → timeline → investment options (good/better/best) → next step.
-My services: [list]. My pricing logic: [describe]. Keep it confident and plain-spoken.`,
+`Act as my referral message strategist. Create a clear, relationship-safe referral ask for the person described below.
+
+My business helps: [insert ideal client and outcome]
+Best-fit referral looks like: [insert signs and pain points]
+Person I am asking: [insert relationship/context]
+Offer or next step: [insert workshop, call, audit, or resource]
+
+Return: direct ask, who-to-look-for line, forwardable intro, softer version, and follow-up if they say yes.`,
     },
     {
-      id: "reporting",
-      label: "Client reporting & status updates",
-      hint: "Pulling the same updates together every week",
+      id: "leadnurture",
+      label: "Following up with warm leads",
+      hint: "Reconnecting before they go cold",
       hoursDefault: 3, cadence: "week",
-      recoverPct: 0.60,
-      promptName: "Status Report Builder",
+      recoverPct: 0.50,
+      promptName: "The Lead Nurture Check-In",
+      savesNote: "Typically saves 30–60 min per follow-up block",
       prompt:
-`Build a client status update from these raw notes. Output: (1) headline progress in one line,
-(2) what we did, (3) what's next, (4) anything we need from them, (5) a confident closing line.
-Client: [name]. Reporting period: [dates].
-Raw notes:
-[paste here]`,
+`Act as my warm lead nurture assistant. Draft a thoughtful check-in message that reconnects without pressure and moves the conversation toward a useful next step.
+
+Lead context: [how we met, what they needed, previous conversation]
+Their likely current problem: [insert best understanding]
+My relevant offer/resource: [insert offer, workshop, guide, or call]
+Tone: direct, warm, not salesy
+
+Return: short check-in, personal version, resource angle, low-pressure CTA, and versions for email and DM/text.`,
     },
     {
-      id: "scheduling",
-      label: "Scheduling & calendar wrangling",
-      hint: "Back-and-forth to find a time",
-      hoursDefault: 2, cadence: "week",
-      recoverPct: 0.75,
-      promptName: "Calendar Coordinator",
+      id: "testimonials",
+      label: "Capturing testimonials & proof",
+      hint: "Turning scattered client praise into usable proof",
+      hoursDefault: 1, cadence: "week",
+      recoverPct: 0.50,
+      promptName: "The Testimonial Extractor",
+      savesNote: "Typically saves 30–45 min per testimonial",
       prompt:
-`Write 3 scheduling messages I can send to book [meeting type] with [who]:
-one offering specific slots, one for a reschedule, one gentle nudge if no reply.
-My availability: [describe]. Tone: [3 words].`,
+`Act as my client proof strategist. Review the client feedback below and extract usable testimonial language without exaggerating or changing the meaning.
+
+Client feedback: [paste feedback, notes, or transcript]
+My offer/context: [insert offer or service]
+
+Return: 3 testimonial options, short proof line, specific result, claims needing confirmation, and permission-request message.`,
     },
     {
-      id: "invoicing",
-      label: "Invoicing & payment chasing",
-      hint: "Raising invoices and following up on late ones",
-      hoursDefault: 2, cadence: "week",
-      recoverPct: 0.60,
-      promptName: "Invoice & AR Nudge",
-      prompt:
-`Write a 3-step payment follow-up sequence (friendly reminder → firm nudge → final notice)
-for an invoice to [client] for [amount], [days] overdue. Keep me professional and easy to pay.
-Include a one-line subject for each.`,
-    },
-    {
-      id: "content",
-      label: "Content & social posts",
-      hint: "Writing posts and repurposing what you already said",
-      hoursDefault: 3, cadence: "week",
-      recoverPct: 0.60,
-      promptName: "Content Repurposer",
-      prompt:
-`Take this one idea and turn it into a week of content: 1 short article, 3 LinkedIn posts,
-and 2 short-form video hooks. Keep my voice [3 words]. Audience: [who].
-Core idea:
-[paste your idea/notes here]`,
-    },
-    {
-      id: "onboarding",
-      label: "Hiring & onboarding docs",
-      hint: "Writing role docs and onboarding from scratch",
+      id: "relationships",
+      label: "Managing your network",
+      hint: "Remembering who to nurture this week",
       hoursDefault: 2, cadence: "week",
       recoverPct: 0.50,
-      promptName: "Onboarding Doc Builder",
+      promptName: "The Relationship Map Refresher",
+      savesNote: "Typically saves 60–120 min per week",
       prompt:
-`Draft an onboarding checklist + first-30-days plan for a new [role] in my business [what you do].
-Include: tools to set up, who to meet, the first small win, and how I'll know they're on track.`,
+`Act as my relationship asset mapper. Use the contact list or notes below to identify warm relationships, referral partners, dormant leads, and people who should receive value this week.
+
+Current business priority: [insert goal]
+Contact notes/list: [paste names and context]
+
+Return: top 5 people to contact, why each matters, best message angle, suggested next step, and one relationship to stop over-investing in right now.`,
     },
     {
-      id: "sops",
-      label: "SOPs & process documentation",
-      hint: "Writing down how things should be done",
-      hoursDefault: 3, cadence: "week",
-      recoverPct: 0.60,
-      promptName: "SOP Writer",
+      id: "sundaybrief",
+      label: "Weekly planning",
+      hint: "Setting the week before it sets you",
+      hoursDefault: 2, cadence: "week",
+      recoverPct: 0.50,
+      promptName: "The Sunday Clarity Brief",
+      savesNote: "Typically saves 1–2 hours per week",
       prompt:
-`Turn this messy description of how I do [task] into a clean step-by-step SOP a new hire could follow.
-Include: purpose, when to use it, numbered steps, common mistakes, and a quality check.
-How I currently do it:
-[describe in your own words]`,
+`Act as my weekly operating strategist. Build a Sunday Clarity Brief that helps me enter the week with priorities, boundaries, decisions, and recovery space already named.
+
+Top business goal this month: [insert goal]
+Known commitments this week: [insert meetings/deadlines]
+Current pressure points: [insert fires/bottlenecks]
+
+Return: top 3 priorities, what must not get attention, decisions to pre-make, tasks to remove/shorten/delegate, one recovery boundary, and Monday first move.`,
+    },
+    {
+      id: "decisionfloor",
+      label: "Re-planning under pressure",
+      hint: "Rebuilding the plan when a week goes sideways",
+      hoursDefault: 2, cadence: "week",
+      recoverPct: 0.50,
+      promptName: "The Decision Floor Builder",
+      savesNote: "Typically saves 1–3 hours in heavy weeks",
+      prompt:
+`Act as my decision-floor strategist. Help me define the minimum viable actions that keep my business moving during a demanding week.
+
+Current season or constraint: [insert travel, launch, illness, client surge]
+Business non-negotiables: [insert revenue, delivery, sales, leadership, admin]
+What usually falls apart first: [insert weak point]
+
+Return: minimum viable week, minimum viable day, three non-negotiables, what can wait, what to communicate, and reset plan.`,
+    },
+    {
+      id: "fridaydebrief",
+      label: "Weekly review & debrief",
+      hint: "Finding what worked before you repeat the week",
+      hoursDefault: 1.5, cadence: "week",
+      recoverPct: 0.50,
+      promptName: "The Friday Profit Debrief",
+      savesNote: "Typically saves 45–90 min per week",
+      prompt:
+`Act as my Friday Profit Debrief partner. Review my week and identify what worked, what leaked time, and what needs to change next week.
+
+This week's wins: [insert wins]
+This week's friction: [insert delays/interruption]
+Revenue or sales movement: [insert booked calls/proposals/cash]
+Energy level: [insert honest answer]
+
+Return: what created value, what wasted time, one operational leak, one decision before Monday, one leadership behavior to repeat, and a 5-sentence operating log summary.`,
     },
   ],
 
