@@ -48,7 +48,7 @@ const CONFIG = {
     eyebrow: "Free · about 2 minutes · no signup to start",
     headline: "The work that lands back on your desk every week.",
     headlineAccent: "Let's take it off your plate.",
-    subhead: "See where your hours really go — and get 2 prompts to win them back today.",
+    subhead: "The same tasks keep landing back on your desk. See where your hours really go — and get 2 prompts to win them back today.",
     bullets: [
       "Where your hours actually go",
       "What it's quietly costing you — in real dollars",

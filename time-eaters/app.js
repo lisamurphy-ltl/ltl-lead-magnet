@@ -65,39 +65,20 @@
 
   function screen(html) { $app.innerHTML = `<section class="screen">${html}</section>`; }
 
-  // Brand glass-chrome infinity mark (cool chrome loops + warm ember core)
-  function infinityMark() {
-    return `
-      <svg class="hero-mark" viewBox="0 0 200 110" role="img" aria-label="Limited to Limitless">
-        <defs>
-          <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#4f7aa8"/><stop offset=".34" stop-color="#dce9f7"/>
-            <stop offset=".5" stop-color="#ffffff"/><stop offset=".66" stop-color="#bcd6ef"/>
-            <stop offset="1" stop-color="#4f7aa8"/>
-          </linearGradient>
-          <radialGradient id="ember" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stop-color="#fff3e6"/><stop offset=".28" stop-color="#ff9a4d"/>
-            <stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/>
-          </radialGradient>
-          <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="2" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <circle cx="100" cy="55" r="27" fill="url(#ember)"/>
-        <path d="M44,55 C44,29 73,29 100,55 C127,81 156,81 156,55 C156,29 127,29 100,55 C73,81 44,81 44,55 Z"
-              fill="none" stroke="url(#chrome)" stroke-width="11" stroke-linecap="round" filter="url(#soft)"/>
-      </svg>`;
+  // Brand hero art ("Where Your Hours Go" — chrome infinity + clock)
+  function heroImg() {
+    return `<img class="hero-img" src="/time-eaters/assets/where-your-hours-go.png"
+      alt="Where your hours go — win hours back. Limited to Limitless." width="1024" height="1024" />`;
   }
 
   // ===== 0. INTRO / opt-in hook =====
   function intro() {
     const c = CONFIG.intro;
     screen(`
-      ${infinityMark()}
-      <div class="eyebrow">${esc(c.eyebrow)}</div>
-      <h1 class="title">${esc(c.headline)} <span class="accent shimmer">${esc(c.headlineAccent)}</span></h1>
-      <p class="lede">${esc(c.subhead)}</p>
+      ${heroImg()}
+      <h1 class="sr-only">Free Time Calculator — see where your hours go and win them back</h1>
+      <div class="eyebrow center">${esc(c.eyebrow)}</div>
+      <p class="lede center hook">${esc(c.subhead)}</p>
       <ul class="bullets">${c.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
       <div class="stack"><button class="btn" id="go">${esc(c.cta)}</button></div>
       <p class="privacy">No signup to start. Takes about 2 minutes.</p>
@@ -171,17 +152,19 @@
       return `
         <div class="hours-row">
           <div class="hr-name">${esc(t.label)}<span class="hr-wk" data-wk="${id}"></span></div>
-          <input type="number" min="0" step="0.5" value="${esc(h.value)}" data-id="${id}" aria-label="hours for ${esc(t.label)}" />
-          <span class="seg" data-id="${id}">
-            <button data-cad="day" class="${h.cadence === "day" ? "on" : ""}">a day</button>
-            <button data-cad="week" class="${h.cadence === "week" ? "on" : ""}">a week</button>
-          </span>
+          <div class="hr-controls">
+            <input class="hr-hours" type="number" min="0" step="0.5" value="${esc(h.value)}" data-id="${id}" aria-label="hours for ${esc(t.label)}" />
+            <select class="hr-cad" data-id="${id}" aria-label="how often for ${esc(t.label)}">
+              <option value="day" ${h.cadence === "day" ? "selected" : ""}>hrs per day</option>
+              <option value="week" ${h.cadence === "week" ? "selected" : ""}>hrs per week</option>
+            </select>
+          </div>
         </div>`;
     }).join("");
     screen(`
       <div class="step-label">Step 3 of 7</div>
       <h2 class="title">How long does each one take you?</h2>
-      <p class="sub">Just your best guess — round numbers are fine. Tap <strong>a day</strong> if you do it most days (then put the hours for <em>one</em> day). Tap <strong>a week</strong> if it's more of a weekly thing.</p>
+      <p class="sub">Best guess is fine — round numbers work. Type the hours, then choose <strong>per day</strong> or <strong>per week</strong> from the dropdown.</p>
       <div class="card" style="margin-top:18px">${rows}</div>
       <p class="note">Example: 1 hour <strong>a day</strong> on email = about 5 hours a week.</p>
       <div class="btn-row">
@@ -196,17 +179,11 @@
       el.textContent = wk > 0 ? `≈ ${(+wk.toFixed(1))} hrs/week` : "";
     };
     state.selected.forEach(updateWk);
-    document.querySelectorAll('.hours-row input').forEach((inp) => {
+    document.querySelectorAll('.hr-hours').forEach((inp) => {
       inp.oninput = (e) => { state.hours[e.target.dataset.id].value = e.target.value; updateWk(e.target.dataset.id); saveState(); };
     });
-    document.querySelectorAll('.seg').forEach((seg) => {
-      seg.querySelectorAll("button").forEach((b) => {
-        b.onclick = () => {
-          state.hours[seg.dataset.id].cadence = b.dataset.cad;
-          seg.querySelectorAll("button").forEach((x) => x.classList.remove("on"));
-          b.classList.add("on"); updateWk(seg.dataset.id); saveState();
-        };
-      });
+    document.querySelectorAll('.hr-cad').forEach((sel) => {
+      sel.onchange = (e) => { state.hours[e.target.dataset.id].cadence = e.target.value; updateWk(e.target.dataset.id); saveState(); };
     });
     document.getElementById("back").onclick = back;
     document.getElementById("next").onclick = next;
