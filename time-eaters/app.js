@@ -1,11 +1,11 @@
-/* LtL Free Lead Magnet — app logic (vanilla JS, no build step) */
+/* LtL Time-Calculator — app logic (vanilla JS, no build step) */
 (function () {
   "use strict";
   const $app = document.getElementById("app");
   const $topbar = document.getElementById("topbar");
   const $progress = document.getElementById("progressFill");
   const $toast = document.getElementById("toast");
-  const STORE_KEY = "ltl_leadmagnet_v1";
+  const STORE_KEY = "ltl_timecalc_v1";
 
   // ---------- state ----------
   const params = new URLSearchParams(location.search);
@@ -265,46 +265,100 @@
     requestAnimationFrame(frame);
   }
 
-  // ===== 6. THE EMAIL GATE (lead capture) =====
+  // ===== 6. THE GATE — name (for dynamic headline) → GHL Form 44 capture =====
   function gate() {
     const { leakTotalYr } = computeRows();
+
+    // Phase A — capture first name (drives the dynamic results headline
+    // and pre-fills the GHL form so they don't type it twice).
+    if (!state._gateFormShown) {
+      screen(`
+        <div class="step-label">Step 6 of 7</div>
+        <h2 class="title">First — what should we call you?</h2>
+        <p class="sub">Your full breakdown, your top 2 priorities, and <strong>2 prompts you can run today</strong> are ready.</p>
+        <div class="card" style="margin-top:18px">
+          <div class="badge">${money(leakTotalYr)}/yr identified</div>
+          <label class="field"><span class="lbl">First name</span>
+            <input type="text" id="name" placeholder="Your first name" value="${esc(state.name)}" /></label>
+          <div class="stack" style="margin-top:18px">
+            <button class="btn" id="toForm" ${state.name.trim() ? "" : "disabled"}>Continue →</button>
+          </div>
+        </div>
+        <div class="btn-row"><button class="btn secondary back" id="back">Back</button></div>
+      `);
+      const nameEl = document.getElementById("name");
+      const btn = document.getElementById("toForm");
+      const proceed = () => { if (state.name.trim()) { state._gateFormShown = true; saveState(); render(); } };
+      nameEl.oninput = (e) => { state.name = e.target.value; btn.disabled = !state.name.trim(); saveState(); };
+      nameEl.onkeydown = (e) => { if (e.key === "Enter") proceed(); };
+      btn.onclick = proceed;
+      document.getElementById("back").onclick = back;
+      return;
+    }
+
+    // Phase B — the GoHighLevel form (native capture into GHL).
+    const g = CONFIG.capture.ghlForm;
+    const k = g.prefillKeys || {};
+    const qs = new URLSearchParams();
+    if (k.firstName) qs.set(k.firstName, state.name || "");
+    if (k.leakTotal) qs.set(k.leakTotal, String(Math.round(leakTotalYr)));
+    if (k.believedLeak && state.believedLeak) qs.set(k.believedLeak, state.believedLeak.slice(0, 200));
+    const src = g.embedUrl + (qs.toString() ? "?" + qs.toString() : "");
     screen(`
       <div class="step-label">Step 6 of 7</div>
-      <h2 class="title">Where should we send your results?</h2>
-      <p class="sub">Your full breakdown, your top 2 priorities, and <strong>2 prompts you can run today</strong> — sent to your inbox and shown on the next screen.</p>
-      <div class="card" style="margin-top:18px">
-        <div class="badge">${money(leakTotalYr)}/yr identified</div>
-        <label class="field"><span class="lbl">First name</span>
-          <input type="text" id="name" placeholder="Your first name" value="${esc(state.name)}" /></label>
-        <label class="field"><span class="lbl">Email</span>
-          <input type="email" id="email" placeholder="you@company.com" value="${esc(state.email)}" /></label>
-        <div class="stack" style="margin-top:18px">
-          <button class="btn" id="reveal" disabled>Show me my results →</button>
-        </div>
-        <div class="trust">🔒 We'll never spam you. One-click unsubscribe.</div>
+      <h2 class="title">${esc(state.name)} — where should we send your results?</h2>
+      <p class="sub">Pop in your details below. Your full breakdown + your 2 prompts unlock on the next screen.</p>
+      <div class="badge" style="display:inline-block;margin:6px 0 14px">${money(leakTotalYr)}/yr identified</div>
+      <div class="ghl-wrap">
+        <iframe src="${src}"
+          id="inline-${g.formId}"
+          data-layout="{'id':'INLINE'}"
+          data-form-id="${g.formId}"
+          data-height="${g.height}"
+          title="Time-Calculator form"
+          style="width:100%;height:${g.height}px;border:none;border-radius:12px;background:transparent"></iframe>
       </div>
+      <div class="stack" style="margin-top:16px">
+        <button class="btn" id="reveal">I've submitted — show my results →</button>
+      </div>
+      <div class="trust">🔒 We'll never spam you. One-click unsubscribe.</div>
       <div class="btn-row"><button class="btn secondary back" id="back">Back</button></div>
     `);
-    const nameEl = document.getElementById("name");
-    const emailEl = document.getElementById("email");
-    const btn = document.getElementById("reveal");
-    const validate = () => { btn.disabled = !(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailEl.value.trim())); };
-    nameEl.oninput = (e) => { state.name = e.target.value; saveState(); };
-    emailEl.oninput = (e) => { state.email = e.target.value.trim(); validate(); saveState(); };
-    validate();
-    document.getElementById("back").onclick = back;
-    btn.onclick = async () => {
-      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
-      await captureLead();
-      next();
+    loadGhlScript(g.scriptUrl);
+
+    // Best-effort: auto-advance when the GHL form reports a submission.
+    if (window.__ltlFormMsg) window.removeEventListener("message", window.__ltlFormMsg);
+    window.__ltlFormMsg = (e) => {
+      try {
+        const s = typeof e.data === "string" ? e.data : JSON.stringify(e.data || "");
+        if (/submitt|submission|form.?submit/i.test(s)) advanceFromGate();
+      } catch (_) {}
     };
+    window.addEventListener("message", window.__ltlFormMsg);
+
+    document.getElementById("reveal").onclick = advanceFromGate;
+    document.getElementById("back").onclick = () => { state._gateFormShown = false; saveState(); render(); };
+  }
+
+  function loadGhlScript(url) {
+    if (document.querySelector('script[data-ltl-ghl]')) return;
+    const s = document.createElement("script");
+    s.src = url; s.async = true; s.setAttribute("data-ltl-ghl", "1");
+    document.body.appendChild(s);
+  }
+
+  function advanceFromGate() {
+    if (state.captured) { next(); return; }
+    state.captured = true; saveState();
+    captureLead(); // optional secondary (only does anything if you wire /api/lead)
+    next();
   }
 
   // ---- the lead-capture call (the gateway) ----
   async function captureLead() {
     const { top2, leakTotalYr } = computeRows();
     const payload = {
-      source: "lead-magnet",
+      source: "time-calculator",
       name: state.name,
       email: state.email,
       believedLeak: state.believedLeak,
@@ -411,7 +465,7 @@
     try {
       fetch(CONFIG.capture.endpoint, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "lead-magnet", event: "ran-prompt", email: state.email, promptId: id, tags: [CONFIG.capture.ranPromptTag] }),
+        body: JSON.stringify({ source: "time-calculator", event: "ran-prompt", email: state.email, promptId: id, tags: [CONFIG.capture.ranPromptTag] }),
         keepalive: true,
       });
     } catch (e) {}

@@ -1,4 +1,4 @@
-/* LtL Lead Magnet — lead capture gateway (Vercel serverless function)
+/* LtL Time-Calculator — optional secondary capture (Vercel serverless function)
    ---------------------------------------------------------------------
    POST /api/lead  → captures a lead and fans it out to whatever is wired.
    Everything is OPTIONAL and driven by environment variables, so the

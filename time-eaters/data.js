@@ -1,5 +1,5 @@
 /* =====================================================================
-   LtL — Free Lead Magnet — DATA & CONFIG
+   LtL — Time-Calculator (free tool) — DATA & CONFIG
    ---------------------------------------------------------------------
    Lisa: this is the ONE file to edit for content + capture settings.
    Everything below is plain English. Change text inside the quotes.
@@ -18,15 +18,25 @@ const CONFIG = {
     briefingUrl: "https://plan-to-profit.limitedtolimitless.com/plan_your_profits", // $97 Briefing / next step
   },
 
-  // ---- LEAD CAPTURE GATEWAY -------------------------------------------
-  // The email gate POSTs to /api/lead. That serverless function reads
-  // the env vars below (set them in Vercel → Settings → Environment Vars).
-  // Nothing here needs to change for capture to work — the server reads
-  // its own env. This block only controls front-end behaviour.
+  // ---- LEAD CAPTURE -------------------------------------------------
+  // PRIMARY capture = the embedded GoHighLevel form (Form 44). It writes
+  // the contact straight into GHL natively — no API key needed.
+  // The user's first name is collected by the tool (for the dynamic
+  // results headline) and pre-filled into the form.
   capture: {
-    endpoint: "/api/lead",   // serverless function path
-    leadTag: "icp-b-lead",   // GHL tag added on opt-in
-    ranPromptTag: "ran-prompt", // GHL tag added when a prompt is copied
+    // The GHL form embed (from plan-2-profit.limitedtolimitless.com).
+    ghlForm: {
+      embedUrl: "https://plan-2-profit.limitedtolimitless.com/widget/form/41QFur34nXbgSafBsYiH",
+      scriptUrl: "https://plan-2-profit.limitedtolimitless.com/js/form_embed.js",
+      formId: "41QFur34nXbgSafBsYiH",
+      height: 882,
+      // Optional: if Form 44 has hidden fields with these "Query Keys",
+      // the leak data flows into the contact too. Harmless if absent.
+      prefillKeys: { firstName: "first_name", leakTotal: "leak_total", believedLeak: "believed_leak" },
+    },
+    endpoint: "/api/lead",   // optional secondary serverless capture (only used if you wire it)
+    leadTag: "icp-b-lead",   // GHL tag for these leads
+    ranPromptTag: "ran-prompt", // GHL tag when a prompt is copied
   },
 
   // 10× defensibility ceiling (shared with the $97 tool). A single

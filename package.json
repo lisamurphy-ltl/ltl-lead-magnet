@@ -1,7 +1,7 @@
 {
-  "name": "ltl-lead-magnet",
+  "name": "ltl-time-calculator",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Limited to Limitless — free lead magnet (time-leak read + 2 prompts) with email-capture gateway."
+  "description": "Limited to Limitless — Time-Calculator (free tool): time-leak read + 2 prompts, with GoHighLevel form capture."
 }
