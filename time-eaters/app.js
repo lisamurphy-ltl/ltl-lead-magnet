@@ -75,15 +75,27 @@
   function intro() {
     const c = CONFIG.intro;
     screen(`
-      ${heroImg()}
       <h1 class="sr-only">Free Time Calculator — see where your hours go and win them back</h1>
-      <div class="eyebrow center">${esc(c.eyebrow)}</div>
-      <p class="lede center hook">${esc(c.subhead)}</p>
-      <ul class="bullets">${c.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
-      <div class="stack"><button class="btn" id="go">${esc(c.cta)}</button></div>
-      <p class="privacy">No signup to start. Takes about 2 minutes.</p>
+      <section class="hero">
+        <div class="hero-halo" aria-hidden="true"></div>
+        <span class="eyebrow pill">${esc(c.eyebrow)}</span>
+        ${heroImg()}
+        <p class="hero-h shimmer">${esc(c.headlineAccent)}</p>
+        <p class="hero-sub">${esc(c.subhead)}</p>
+        <div class="hero-cta"><button class="btn lg" id="go">${esc(c.cta)}</button></div>
+        <p class="privacy">🔒 No signup to start · about 2 minutes</p>
+        <button class="scroll-cue" id="scrollDown" type="button" aria-label="See what you get">▾</button>
+      </section>
+      <section class="value">
+        <h2 class="value-title">In about 2 minutes, you'll walk away with:</h2>
+        <ul class="bullets">${c.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
+        <div class="stack"><button class="btn lg" id="go2">${esc(c.cta)}</button></div>
+      </section>
     `);
     document.getElementById("go").onclick = next;
+    document.getElementById("go2").onclick = next;
+    document.getElementById("scrollDown").onclick = () =>
+      document.querySelector(".value").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   // ===== 1. NAME THE TIME-EATERS =====
