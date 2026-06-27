@@ -86,6 +86,11 @@
         ${heroImg()}
         <p class="hero-h">${esc(c.headline)} <span class="shimmer">${esc(c.headlineAccent)}</span></p>
         <p class="hero-sub">${esc(c.subhead)}</p>
+        <div class="hero-name">
+          <input type="text" id="heroName" placeholder="First, what's your first name?" value="${esc(state.name)}" aria-label="Your first name" autocomplete="given-name" />
+          <button class="btn" id="goHero" type="button">${esc(c.cta)}</button>
+        </div>
+        <p class="privacy">🔒 No signup to start · about 2 minutes</p>
         <button class="scroll-cue" id="scrollDown" type="button" aria-label="Read more">▾</button>
       </section>
       <section class="lp">
@@ -102,8 +107,24 @@
         </div>
       </section>
     `);
-    document.getElementById("goTop").onclick = next;
-    document.getElementById("go").onclick = next;
+    const launch = () => {
+      if (!state.name.trim()) {
+        const f = document.getElementById("heroName");
+        if (f) {
+          f.scrollIntoView({ behavior: "smooth", block: "center" });
+          f.classList.add("nudge"); setTimeout(() => { f.classList.remove("nudge"); f.focus(); }, 450);
+        }
+        toast("First — what should we call you?");
+        return;
+      }
+      next();
+    };
+    const nameEl = document.getElementById("heroName");
+    nameEl.oninput = (e) => { state.name = e.target.value; saveState(); };
+    nameEl.onkeydown = (e) => { if (e.key === "Enter") launch(); };
+    document.getElementById("goHero").onclick = launch;
+    document.getElementById("goTop").onclick = launch;
+    document.getElementById("go").onclick = launch;
     document.getElementById("scrollDown").onclick = () =>
       document.querySelector(".lp").scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -308,28 +329,38 @@
   function gate() {
     const { leakTotalYr } = computeRows();
 
-    // Phase A — capture first name (drives the dynamic results headline
-    // and pre-fills the GHL form so they don't type it twice).
+    // Phase A — email only (we already have their first name from page 1).
+    // Fires our capture (Resend + records) BEFORE the GHL form so the
+    // redirect can't skip it.
     if (!state._gateFormShown) {
+      const emailOk = (v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((v || "").trim());
+      const ready = () => emailOk(state.email);
+      const who = state.name.trim() ? esc(state.name.trim()) + " — where" : "Where";
       screen(`
         <div class="step-label">Step 6 of 7</div>
-        <h2 class="title">First — what should we call you?</h2>
-        <p class="sub">Your full breakdown, your top 2 priorities, and <strong>2 prompts you can run today</strong> are ready.</p>
+        <h2 class="title">${who} should we send your results?</h2>
+        <p class="sub">Your full breakdown, your top 2 priorities, and <strong>2 prompts you can run today</strong> — sent to your inbox and shown on the next screen.</p>
         <div class="card" style="margin-top:18px">
           <div class="badge">${money(leakTotalYr)}/yr identified</div>
-          <label class="field"><span class="lbl">First name</span>
-            <input type="text" id="name" placeholder="Your first name" value="${esc(state.name)}" /></label>
+          <label class="field"><span class="lbl">Email</span>
+            <input type="email" id="email" placeholder="you@company.com" value="${esc(state.email)}" /></label>
           <div class="stack" style="margin-top:18px">
-            <button class="btn" id="toForm" ${state.name.trim() ? "" : "disabled"}>Continue →</button>
+            <button class="btn" id="toForm" ${ready() ? "" : "disabled"}>Continue →</button>
           </div>
+          <div class="trust">🔒 We'll never spam you. One-click unsubscribe.</div>
         </div>
         <div class="btn-row"><button class="btn secondary back" id="back">Back</button></div>
       `);
-      const nameEl = document.getElementById("name");
+      const emailEl = document.getElementById("email");
       const btn = document.getElementById("toForm");
-      const proceed = () => { if (state.name.trim()) { state._gateFormShown = true; saveState(); render(); } };
-      nameEl.oninput = (e) => { state.name = e.target.value; btn.disabled = !state.name.trim(); saveState(); };
-      nameEl.onkeydown = (e) => { if (e.key === "Enter") proceed(); };
+      const refresh = () => { btn.disabled = !ready(); };
+      const proceed = () => {
+        if (!ready()) return;
+        captureLead();              // → /api/lead (Resend + our records) before the GHL form
+        state._gateFormShown = true; saveState(); render();
+      };
+      emailEl.oninput = (e) => { state.email = e.target.value.trim(); refresh(); saveState(); };
+      emailEl.onkeydown = (e) => { if (e.key === "Enter") proceed(); };
       btn.onclick = proceed;
       document.getElementById("back").onclick = back;
       return;
@@ -340,6 +371,7 @@
     const k = g.prefillKeys || {};
     const qs = new URLSearchParams();
     if (k.firstName) qs.set(k.firstName, state.name || "");
+    if (k.email && state.email) qs.set(k.email, state.email);
     if (k.leakTotal) qs.set(k.leakTotal, String(Math.round(leakTotalYr)));
     if (k.believedLeak && state.believedLeak) qs.set(k.believedLeak, state.believedLeak.slice(0, 200));
     const src = g.embedUrl + (qs.toString() ? "?" + qs.toString() : "");
@@ -534,7 +566,13 @@
   document.getElementById("restartBtn").onclick = restart;
 
   // ---------- boot ----------
-  // resume where they left off if mid-flow
-  if (state.selected.length && !state.captured) step = 1;
+  // GHL form redirect lands here: ?reveal=1 jumps straight to results
+  // (their inputs persist in this browser, so we can rebuild the result).
+  if (params.get("reveal") === "1" && state.selected.length) {
+    state.captured = true; saveState();
+    step = STEPS.indexOf("results");
+  } else if (state.selected.length && !state.captured) {
+    step = 1; // resume mid-flow
+  }
   render();
 })();

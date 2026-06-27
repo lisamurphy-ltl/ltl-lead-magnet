@@ -32,7 +32,7 @@ const CONFIG = {
       height: 882,
       // Optional: if Form 44 has hidden fields with these "Query Keys",
       // the leak data flows into the contact too. Harmless if absent.
-      prefillKeys: { firstName: "first_name", leakTotal: "leak_total", believedLeak: "believed_leak" },
+      prefillKeys: { firstName: "first_name", email: "email", leakTotal: "leak_total", believedLeak: "believed_leak" },
     },
     endpoint: "/api/lead",   // optional secondary serverless capture (only used if you wire it)
     leadTag: "icp-b-lead",   // GHL tag for these leads
