@@ -325,56 +325,20 @@
   function gate() {
     const { leakTotalYr } = computeRows();
 
-    // Phase A — email only (we already have their first name from page 1).
-    // Fires our capture (Resend + records) BEFORE the GHL form so the
-    // redirect can't skip it.
-    if (!state._gateFormShown) {
-      const emailOk = (v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((v || "").trim());
-      const ready = () => emailOk(state.email);
-      const who = state.name.trim() ? esc(state.name.trim()) + " — where" : "Where";
-      screen(`
-        <div class="step-label">Step 6 of 7</div>
-        <h2 class="title">${who} should we send your results?</h2>
-        <p class="sub">Your full breakdown, your top 2 priorities, and <strong>2 prompts you can run today</strong> — sent to your inbox and shown on the next screen.</p>
-        <div class="card" style="margin-top:18px">
-          <div class="badge">${money(leakTotalYr)}/yr identified</div>
-          <label class="field"><span class="lbl">Email</span>
-            <input type="email" id="email" placeholder="you@company.com" value="${esc(state.email)}" /></label>
-          <div class="stack" style="margin-top:18px">
-            <button class="btn" id="toForm" ${ready() ? "" : "disabled"}>Continue →</button>
-          </div>
-          <div class="trust">🔒 We'll never spam you. One-click unsubscribe.</div>
-        </div>
-        <div class="btn-row"><button class="btn secondary back" id="back">Back</button></div>
-      `);
-      const emailEl = document.getElementById("email");
-      const btn = document.getElementById("toForm");
-      const refresh = () => { btn.disabled = !ready(); };
-      const proceed = () => {
-        if (!ready()) return;
-        captureLead();              // → /api/lead (Resend + our records) before the GHL form
-        state._gateFormShown = true; saveState(); render();
-      };
-      emailEl.oninput = (e) => { state.email = e.target.value.trim(); refresh(); saveState(); };
-      emailEl.onkeydown = (e) => { if (e.key === "Enter") proceed(); };
-      btn.onclick = proceed;
-      document.getElementById("back").onclick = back;
-      return;
-    }
-
-    // Phase B — the GoHighLevel form (native capture into GHL).
+    // The gate IS the GoHighLevel form (Form 44), pre-filled with their
+    // first name + their leak data. Captures the contact into GHL natively.
     const g = CONFIG.capture.ghlForm;
     const k = g.prefillKeys || {};
     const qs = new URLSearchParams();
     if (k.firstName) qs.set(k.firstName, state.name || "");
-    if (k.email && state.email) qs.set(k.email, state.email);
     if (k.leakTotal) qs.set(k.leakTotal, String(Math.round(leakTotalYr)));
     if (k.believedLeak && state.believedLeak) qs.set(k.believedLeak, state.believedLeak.slice(0, 200));
     const src = g.embedUrl + (qs.toString() ? "?" + qs.toString() : "");
+    const who = state.name.trim() ? esc(state.name.trim()) + " — where" : "Where";
     screen(`
       <div class="step-label">Step 6 of 7</div>
-      <h2 class="title">${esc(state.name)} — where should we send your results?</h2>
-      <p class="sub">Pop in your details below. Your full breakdown + your 2 prompts unlock on the next screen.</p>
+      <h2 class="title">${who} should we send your results?</h2>
+      <p class="sub">Your first name's filled in — just add your email below. Your full breakdown + your 2 prompts unlock on the next screen.</p>
       <div class="badge" style="display:inline-block;margin:6px 0 14px">${money(leakTotalYr)}/yr identified</div>
       <div class="ghl-wrap">
         <iframe src="${src}"
@@ -404,7 +368,7 @@
     window.addEventListener("message", window.__ltlFormMsg);
 
     document.getElementById("reveal").onclick = advanceFromGate;
-    document.getElementById("back").onclick = () => { state._gateFormShown = false; saveState(); render(); };
+    document.getElementById("back").onclick = back;
   }
 
   function loadGhlScript(url) {
@@ -492,7 +456,7 @@
     screen(`
       <div class="step-label">Your install-today prompts</div>
       <h2 class="title">Two prompts you can run right now.</h2>
-      <p class="sub">Mapped to your top 2 leaks. Copy one, paste it into ChatGPT, Claude or Gemini, and fill in the <span style="color:var(--gold)">[brackets]</span>. Edit freely — they're a starting point.</p>
+      <p class="sub">Mapped to your top 2 leaks. Copy one, paste it into <strong>Claude</strong>, <strong>Gemini</strong> — or your favorite AI platform, the one you use the most — then fill in the <span style="color:var(--steel)">[brackets]</span>. Edit freely; they're a starting point.</p>
       ${top2.map((r) => `
         <div class="prompt-card">
           <div class="p-head">
