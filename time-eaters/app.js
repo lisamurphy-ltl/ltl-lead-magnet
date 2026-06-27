@@ -75,9 +75,8 @@
   function intro() {
     const c = CONFIG.intro;
     screen(`
-      <header class="lp-head">
+      <header class="lp-head center-head">
         <span class="wordmark">Limited <span class="amp">to</span> Limitless</span>
-        <button class="btn sm" id="goTop" type="button">${esc(c.ctaShort)}</button>
       </header>
       <h1 class="sr-only">Free Time Calculator — see where your hours go and win them back</h1>
       <section class="hero">
@@ -88,7 +87,7 @@
         <p class="hero-sub">${esc(c.subhead)}</p>
         <div class="hero-name">
           <input type="text" id="heroName" placeholder="First, what's your first name?" value="${esc(state.name)}" aria-label="Your first name" autocomplete="given-name" />
-          <button class="btn" id="goHero" type="button">${esc(c.cta)}</button>
+          <button class="btn" id="goHero" type="button" ${state.name.trim() ? "" : "disabled"}>${esc(c.cta)}</button>
         </div>
         <p class="privacy">🔒 No signup to start · about 2 minutes</p>
         <button class="scroll-cue" id="scrollDown" type="button" aria-label="Read more">▾</button>
@@ -102,29 +101,26 @@
         </div>
         <blockquote class="lp-guide">“${esc(c.guide)}”<cite>${esc(c.guideName)}</cite></blockquote>
         <div class="final-cta">
-          <button class="btn lg" id="go" type="button">${esc(c.cta)}</button>
-          <p class="privacy">🔒 ${esc(c.eyebrow)}</p>
+          <button class="btn lg" id="go" type="button" ${state.name.trim() ? "" : "disabled"}>${esc(c.cta)}</button>
+          <p class="privacy" id="finalHint">${state.name.trim() ? "🔒 " + esc(c.eyebrow) : "↑ Enter your first name above to start"}</p>
         </div>
       </section>
     `);
-    const launch = () => {
-      if (!state.name.trim()) {
-        const f = document.getElementById("heroName");
-        if (f) {
-          f.scrollIntoView({ behavior: "smooth", block: "center" });
-          f.classList.add("nudge"); setTimeout(() => { f.classList.remove("nudge"); f.focus(); }, 450);
-        }
-        toast("First — what should we call you?");
-        return;
-      }
-      next();
-    };
+    const launch = () => { if (state.name.trim()) next(); };
     const nameEl = document.getElementById("heroName");
-    nameEl.oninput = (e) => { state.name = e.target.value; saveState(); };
+    const heroBtn = document.getElementById("goHero");
+    const botBtn = document.getElementById("go");
+    const hint = document.getElementById("finalHint");
+    const sync = () => {
+      const ok = !!state.name.trim();
+      heroBtn.disabled = !ok; botBtn.disabled = !ok;
+      hint.textContent = ok ? "🔒 " + c.eyebrow : "↑ Enter your first name above to start";
+    };
+    nameEl.oninput = (e) => { state.name = e.target.value; sync(); saveState(); };
     nameEl.onkeydown = (e) => { if (e.key === "Enter") launch(); };
-    document.getElementById("goHero").onclick = launch;
-    document.getElementById("goTop").onclick = launch;
-    document.getElementById("go").onclick = launch;
+    heroBtn.onclick = launch;
+    botBtn.onclick = launch;
+    sync();
     document.getElementById("scrollDown").onclick = () =>
       document.querySelector(".lp").scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -506,12 +502,16 @@
           <div class="c-hint" style="color:var(--muted);margin-bottom:8px">For: ${esc(r.task.label)}${r.task.savesNote ? ` · <span style="color:var(--gold)">${esc(r.task.savesNote)}</span>` : ""}</div>
           <pre data-prompt="${r.task.id}">${esc(r.task.prompt)}</pre>
         </div>`).join("")}
-      <p class="note">These are the original Hour-Back Pack prompts. The full pack — built into reusable projects that run on a schedule — is in the Efficiency Briefing.</p>
+      <div class="stack" style="margin-top:8px">
+        <button class="btn" id="dl">📥 Download your full Hour-Back Report (PDF)</button>
+      </div>
+      <p class="note" style="text-align:center">Your results, your 2 prompts, <strong>and all 10 Hour-Back prompts</strong> — in one branded PDF to keep.</p>
       <div class="btn-row">
         <button class="btn secondary back" id="back">Back</button>
-        <button class="btn" id="next">What's next →</button>
+        <button class="btn secondary" id="next">What's next →</button>
       </div>
     `);
+    document.getElementById("dl").onclick = (e) => downloadReport(e.currentTarget);
     document.querySelectorAll(".copy-btn").forEach((b) => {
       b.onclick = async () => {
         const id = b.dataset.id;
@@ -532,6 +532,40 @@
     document.getElementById("next").onclick = next;
   }
 
+  async function downloadReport(btn) {
+    const label = btn ? btn.innerHTML : "";
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Building your PDF…'; }
+    try {
+      await ensurePdfMake();
+      const { rows, top2, leakTotalYr } = computeRows();
+      window.LtLReport.generate({
+        name: state.name,
+        leakTotalYr,
+        rows: rows.map((r) => ({ label: r.task.label, weeklyHours: r.weeklyHours, recoverPct: r.recoverPct, annual: r.annual })),
+        top2: top2.map((r) => ({ label: r.task.label, promptName: r.task.promptName, savesNote: r.task.savesNote, prompt: r.task.prompt, annual: r.annual })),
+        numberOneMove: top2[0] ? top2[0].task.label : "",
+        believedLeak: state.believedLeak,
+        allTasks: CONFIG.tasks.map((t) => ({ promptName: t.promptName, label: t.label, savesNote: t.savesNote, prompt: t.prompt })),
+        date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+      });
+      toast("Your Hour-Back Report is downloading");
+    } catch (e) {
+      toast("Couldn't build the PDF — please try again");
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = label; }
+    }
+  }
+
+  function ensurePdfMake() {
+    return new Promise((resolve, reject) => {
+      if (window.pdfMake && window.pdfMake.vfs) return resolve();
+      const add = (src) => new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = no; document.body.appendChild(s); });
+      add("https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js")
+        .then(() => add("https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"))
+        .then(resolve).catch(reject);
+    });
+  }
+
   function flagRanPrompt(id) {
     try {
       fetch(CONFIG.capture.endpoint, {
@@ -550,11 +584,13 @@
       <h2 class="title">${esc(b.line)}</h2>
       <p class="lede">${esc(b.sub)}</p>
       <div class="stack">
+        <button class="btn secondary" id="dl2">📥 Download your Hour-Back Report (PDF)</button>
         <a class="btn" href="${esc(CONFIG.brand.briefingUrl)}" target="_blank" rel="noopener">${esc(b.cta)}</a>
         <button class="btn secondary" id="restart2">Start over</button>
       </div>
       <p class="privacy" style="margin-top:24px">${esc(CONFIG.brand.signoff)}</p>
     `);
+    document.getElementById("dl2").onclick = (e) => downloadReport(e.currentTarget);
     document.getElementById("restart2").onclick = restart;
   }
 

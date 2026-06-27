@@ -129,6 +129,7 @@ h1.title .accent{display:block}
   padding:10px 2px;margin:-26px 0 4px;background:rgba(5,8,15,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .btn.sm{width:auto;flex:none;font-size:13px;padding:9px 15px;border-radius:10px;box-shadow:0 6px 16px rgba(255,138,61,.32)}
 .btn.sm::after{display:none}
+.lp-head.center-head{justify-content:center}
 .lp{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:24px;padding:4px 0 8px}
 .lp-agitate{color:var(--muted);font-size:17px;line-height:1.65;text-align:center;margin:0 auto;max-width:520px}
 .lp-turn{color:var(--ink);font-size:19px;font-weight:600;line-height:1.5;text-align:center;margin:0 auto;max-width:520px}
