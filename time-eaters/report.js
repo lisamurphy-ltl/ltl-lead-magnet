@@ -13,14 +13,23 @@
   const money = (n) => "$" + Math.round(Number(n) || 0).toLocaleString("en-US");
 
   function promptBox(text) {
+    // Render line-by-line (a stack) so EVERY line shows — a single text node
+    // with embedded newlines was collapsing to one line in some renderers.
+    const lines = String(text || "").split(/\r?\n/);
     return {
-      table: { widths: ["*"], body: [[ { text: text, fontSize: 8.5, color: BOXINK, preserveLeadingSpaces: true, lineHeight: 1.28 } ]] },
+      table: {
+        widths: ["*"],
+        body: [[ {
+          stack: lines.map((l) => ({ text: l === "" ? " " : l, fontSize: 8.5, color: BOXINK, preserveLeadingSpaces: true, lineHeight: 1.3, margin: [0, 0, 0, 0] })),
+        } ]],
+      },
       layout: {
         fillColor: () => BOXBG, hLineColor: () => BOXLINE, vLineColor: () => BOXLINE,
         hLineWidth: () => 1, vLineWidth: () => 1,
-        paddingTop: () => 9, paddingBottom: () => 9, paddingLeft: () => 11, paddingRight: () => 11,
+        paddingTop: () => 10, paddingBottom: () => 10, paddingLeft: () => 12, paddingRight: () => 12,
       },
       margin: [0, 4, 0, 14],
+      unbreakable: true,
     };
   }
 
@@ -74,7 +83,7 @@
       if (d.believedLeak) content.push({ text: "You named your biggest leak as: “" + d.believedLeak + "”", color: MUTED, italics: true, fontSize: 10, margin: [0, 0, 0, 0] });
 
       // ---------- YOUR 2 PROMPTS (light) ----------
-      content.push({ text: "Your 2 install-today prompts", color: HEAD, fontSize: 22, bold: true, pageBreak: "before", margin: [0, 0, 0, 6] });
+      content.push({ text: "Your 2 install-today prompts", color: HEAD, fontSize: 22, bold: true, margin: [0, 24, 0, 6] });
       content.push({ text: "Mapped to your biggest leaks. Paste into Claude, Gemini, or your favorite AI, then fill in the [brackets].", color: MUTED, fontSize: 11, margin: [0, 0, 0, 4] });
       (d.top2 || []).forEach((p, i) => {
         content.push({ text: `Priority ${i + 1} — worth ${money(p.annual)}/yr`, color: EMBER, fontSize: 10, bold: true, margin: [0, 10, 0, 0] });
@@ -82,7 +91,7 @@
       });
 
       // ---------- FULL HOUR-BACK PACK (light) ----------
-      content.push({ text: "The full Hour-Back Pack", color: HEAD, fontSize: 22, bold: true, pageBreak: "before", margin: [0, 0, 0, 4] });
+      content.push({ text: "The full Hour-Back Pack", color: HEAD, fontSize: 22, bold: true, margin: [0, 24, 0, 4] });
       content.push({ text: "All 10 copy-paste prompts to reclaim time across your week.", color: MUTED, fontSize: 11, margin: [0, 0, 0, 2] });
       (d.allTasks || []).forEach((p) => promptBlock(content, p));
       content.push({ text: "Ready to build these into systems that run without you? That's the Efficiency Briefing.", color: STEEL, fontSize: 12, bold: true, margin: [0, 16, 0, 0] });
