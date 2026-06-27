@@ -321,68 +321,38 @@
     requestAnimationFrame(frame);
   }
 
-  // ===== 6. THE GATE — name (for dynamic headline) → GHL Form 44 capture =====
+  // ===== 6. THE GATE — email capture → Resend + Notion (via /api/lead) =====
   function gate() {
     const { leakTotalYr } = computeRows();
-
-    // The gate IS the GoHighLevel form (Form 44), pre-filled with their
-    // first name + their leak data. Captures the contact into GHL natively.
-    const g = CONFIG.capture.ghlForm;
-    const k = g.prefillKeys || {};
-    const qs = new URLSearchParams();
-    if (k.firstName) qs.set(k.firstName, state.name || "");
-    if (k.leakTotal) qs.set(k.leakTotal, String(Math.round(leakTotalYr)));
-    if (k.believedLeak && state.believedLeak) qs.set(k.believedLeak, state.believedLeak.slice(0, 200));
-    const src = g.embedUrl + (qs.toString() ? "?" + qs.toString() : "");
+    const emailOk = (v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((v || "").trim());
     const who = state.name.trim() ? esc(state.name.trim()) + " — where" : "Where";
     screen(`
       <div class="step-label">Step 6 of 7</div>
       <h2 class="title">${who} should we send your results?</h2>
-      <p class="sub">Your first name's filled in — just add your email below. Your full breakdown + your 2 prompts unlock on the next screen.</p>
-      <div class="badge" style="display:inline-block;margin:6px 0 14px">${money(leakTotalYr)}/yr identified</div>
-      <div class="ghl-wrap">
-        <iframe src="${src}"
-          id="inline-${g.formId}"
-          data-layout="{'id':'INLINE'}"
-          data-form-id="${g.formId}"
-          data-height="${g.height}"
-          title="Time-Calculator form"
-          style="width:100%;height:${g.height}px;border:none;border-radius:12px;background:transparent"></iframe>
+      <p class="sub">Your full breakdown, your top 2 priorities, and <strong>2 prompts you can run today</strong> — emailed to you and shown on the next screen.</p>
+      <div class="card" style="margin-top:18px">
+        <div class="badge">${money(leakTotalYr)}/yr identified</div>
+        <label class="field"><span class="lbl">Email</span>
+          <input type="email" id="email" placeholder="you@company.com" value="${esc(state.email)}" inputmode="email" autocomplete="email" /></label>
+        <div class="stack" style="margin-top:18px">
+          <button class="btn" id="reveal" ${emailOk(state.email) ? "" : "disabled"}>Email me my results →</button>
+        </div>
+        <div class="trust">🔒 We'll never spam you. One-click unsubscribe.</div>
       </div>
-      <div class="stack" style="margin-top:16px">
-        <button class="btn" id="reveal">I've submitted — show my results →</button>
-      </div>
-      <div class="trust">🔒 We'll never spam you. One-click unsubscribe.</div>
       <div class="btn-row"><button class="btn secondary back" id="back">Back</button></div>
     `);
-    loadGhlScript(g.scriptUrl);
-
-    // Best-effort: auto-advance when the GHL form reports a submission.
-    if (window.__ltlFormMsg) window.removeEventListener("message", window.__ltlFormMsg);
-    window.__ltlFormMsg = (e) => {
-      try {
-        const s = typeof e.data === "string" ? e.data : JSON.stringify(e.data || "");
-        if (/submitt|submission|form.?submit/i.test(s)) advanceFromGate();
-      } catch (_) {}
+    const emailEl = document.getElementById("email");
+    const btn = document.getElementById("reveal");
+    const submit = async () => {
+      if (!emailOk(state.email)) return;
+      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending…';
+      await captureLead();   // → /api/lead → Resend (email + BCC admin) + Notion record
+      next();
     };
-    window.addEventListener("message", window.__ltlFormMsg);
-
-    document.getElementById("reveal").onclick = advanceFromGate;
+    emailEl.oninput = (e) => { state.email = e.target.value.trim(); btn.disabled = !emailOk(state.email); saveState(); };
+    emailEl.onkeydown = (e) => { if (e.key === "Enter") submit(); };
+    btn.onclick = submit;
     document.getElementById("back").onclick = back;
-  }
-
-  function loadGhlScript(url) {
-    if (document.querySelector('script[data-ltl-ghl]')) return;
-    const s = document.createElement("script");
-    s.src = url; s.async = true; s.setAttribute("data-ltl-ghl", "1");
-    document.body.appendChild(s);
-  }
-
-  function advanceFromGate() {
-    if (state.captured) { next(); return; }
-    state.captured = true; saveState();
-    captureLead(); // optional secondary (only does anything if you wire /api/lead)
-    next();
   }
 
   // ---- the lead-capture call (the gateway) ----
