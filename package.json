@@ -3,5 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Limited to Limitless — Time-Calculator (free tool): time-leak read + 2 prompts, with GoHighLevel form capture."
+  "description": "Limited to Limitless — Time-Calculator (free tool): time-leak read + 2 prompts, with GoHighLevel form capture.",
+  "dependencies": { "stripe": "^16.12.0" }
 }

@@ -15,7 +15,7 @@ const CONFIG = {
   brand: {
     name: "Limited to Limitless",
     signoff: "Be Limitless. Be Bold.",
-    briefingUrl: "https://hoursback.limitedtolimitless.com/TimeBriefSolution", // $97 Briefing / next step
+    briefingUrl: "/Efficiency-Briefing", // $97 Briefing — same origin so the free tool's answers carry forward
   },
 
   // ---- LEAD CAPTURE -------------------------------------------------

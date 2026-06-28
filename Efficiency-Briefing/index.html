@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Efficiency Briefing · Limited to Limitless</title>
+  <meta name="description" content="An interactive diagnostic that turns the hours your team loses on repeatable work into a real dollar number — then hands you the three fixes worth building first." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="The Efficiency Briefing — see your number" />
+  <meta property="og:description" content="Turn the hours your team quietly loses into a real dollar number, then build the top 3 fixes into your own AI." />
+  <meta property="og:type" content="website" />
+
+  <!-- Fonts: Barlow Condensed (display) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/Efficiency-Briefing/styles.css" />
+</head>
+<body>
+  <!-- drifting depth glows (decorative) -->
+  <div class="bg-glows" aria-hidden="true">
+    <span class="glow glow--blue"></span>
+    <span class="glow glow--ember"></span>
+    <span class="glow glow--teal"></span>
+  </div>
+
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <img id="brandLogo" class="brand-logo" alt="Limited to Limitless" src="/Efficiency-Briefing/assets/logo.svg" onerror="this.style.display='none'" />
+      <span class="brand-wordmark">Limited to Limitless</span>
+    </div>
+  </header>
+
+  <main id="app" class="wrap">
+    <!-- app.js renders the sales page, the tool, the reveal, and the build
+         walkthrough into here, all from data.js -->
+    <noscript>
+      <p style="text-align:center;padding:2rem">This interactive Briefing needs JavaScript turned on.</p>
+    </noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <p class="signoff" id="footerSignoff">Be Limitless. Be Bold.</p>
+      <nav class="legal">
+        <a href="#" data-legal="privacy">Privacy Policy</a>
+        <span aria-hidden="true">·</span>
+        <a href="#" data-legal="terms">Terms &amp; Conditions</a>
+      </nav>
+      <p class="copyright">© <span id="year"></span> Limited to Limitless. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/Efficiency-Briefing/data.js"></script>
+  <script src="/Efficiency-Briefing/app.js"></script>
+</body>
+</html>
