@@ -39,7 +39,8 @@
     rate: CFG.math.defaultBlendedRate,
     results: null,
     platform: CFG.platforms[0].id,
-    aiBuilds: null,     // populated by /api/brain when available
+    aiBuilds: null,     // populated by /api/eb-brain when available
+    aiNarrative: null,  // populated by /api/eb-narrative when an OpenRouter key is set
   };
 
   /* ---------- boot ---------- */
@@ -184,26 +185,27 @@
   }
   function startFlow() {
     var hs = readHandoff();
-    if (hs) { applyHandoff(hs); renderDeeper(); }   // came from the free tool → skip to the deeper questions
+    if (hs) { applyHandoff(hs); renderTransition(); }   // came from the free tool → branch page, then hours
     else { renderBranch(); }                          // direct visitor → full guided intake
   }
 
-  /* ---- deeper intake (carried from the free tool): confirm all 10 + people per task ---- */
-  function renderDeeper() {
-    var first = state.name ? (", " + String(state.name).split(" ")[0]) : "";
+  function firstName() { return state.name ? (", " + String(state.name).split(" ")[0]) : ""; }
+
+  /* ---- transition / branch page (after carry-forward, BEFORE the hours) ---- */
+  function renderTransition() {
+    if (state.isTeam) return renderTeamCapture();
+    return renderSoloCapture();
+  }
+
+  // TEAM: "we already have your data — now capture your team" (per-task headcount)
+  function renderTeamCapture() {
     var rows = CFG.tasks.map(function (t) {
       var on = !!state.picks[t.id];
-      var p = state.picks[t.id] || { ownerHours: t.hoursDefault, cadence: t.cadence, heads: state.isTeam ? 2 : 1 };
+      var p = state.picks[t.id] || { ownerHours: t.hoursDefault, cadence: t.cadence, heads: 2 };
       var chk = h("input", { type: "checkbox", checked: on ? "checked" : null, "aria-label": t.label });
-      var hoursInput = h("input", { type: "number", min: "0", step: "0.5", value: p.ownerHours, style: "max-width:80px" });
-      var cad = h("div", { class: "toggle-cadence" }, [mkCadBtn(p, "day", "/day"), mkCadBtn(p, "week", "/week")]);
-      var headsInput = h("input", { type: "number", min: "1", step: "1", value: p.heads, style: "max-width:64px", title: "people who do this" });
-      hoursInput.addEventListener("input", function (e) { p.ownerHours = Math.max(0, parseFloat(e.target.value || "0")); });
+      var headsInput = h("input", { type: "number", min: "1", step: "1", value: p.heads, style: "max-width:74px" });
       headsInput.addEventListener("input", function (e) { p.heads = Math.max(1, parseInt(e.target.value || "1", 10)); });
-      var detail = h("div", { style: "display:" + (on ? "flex" : "none") + ";flex-wrap:wrap;gap:10px 16px;align-items:center;margin-top:10px;padding-left:29px" }, [
-        h("div", { class: "hours-controls" }, [hoursInput, cad]),
-        h("div", { class: "hours-controls" }, ["×", headsInput, h("span", { class: "h-sub" }, ["people do this"])]),
-      ]);
+      var detail = h("div", { style: "display:" + (on ? "flex" : "none") + ";align-items:center;gap:8px;margin-top:8px;padding-left:29px" }, [h("span", { class: "h-sub" }, ["How many people do this? ×"]), headsInput]);
       var row = h("div", { class: "task-pick" + (on ? " is-on" : ""), style: "display:block" }, []);
       var head = h("label", { style: "display:flex;align-items:flex-start;gap:11px;cursor:pointer" }, [chk, h("span", {}, [h("span", { class: "t-label" }, [t.label]), h("br"), h("span", { class: "t-hint" }, [t.hint])])]);
       chk.addEventListener("change", function (e) {
@@ -215,16 +217,72 @@
     });
     shell("hours",
       h("div", {}, [
-        h("h2", { class: "step-title" }, ["Welcome back" + first + " — let's complete the picture."]),
-        h("p", { class: "step-help" }, ["We carried over everything you told the free tool. Now confirm every task that lands on your operation — and how many people touch each one. That's what fills your full dashboard."]),
+        h("h2", { class: "step-title" }, ["We've already got your numbers" + firstName() + ". Now — your team."]),
+        h("p", { class: "step-help" }, ["You're not the only one carrying this work. Tick everything your team also touches and tell us how many people do each — that's where the leak really compounds. Hours come next."]),
+      ]),
+      [h("div", { class: "tasklist" }, rows), h("div", { class: "btn-row" }, [h("button", { class: "btn", onclick: goToHours }, ["Next: the hours →"])])]
+    );
+  }
+
+  // SOLO: "we already have your data — now what keeps slipping?" (forgotten / never-have-time-for; counts in the leak)
+  function renderSoloCapture() {
+    var rows = CFG.tasks.map(function (t) {
+      var on = !!state.picks[t.id];
+      var row = h("label", { class: "task-pick" + (on ? " is-on" : ""), style: "display:flex;align-items:flex-start;gap:11px;cursor:pointer" }, [
+        h("input", { type: "checkbox", checked: on ? "checked" : null, "aria-label": t.label }),
+        h("span", {}, [h("span", { class: "t-label" }, [t.label]), h("br"), h("span", { class: "t-hint" }, [t.hint])]),
+      ]);
+      row.querySelector("input").addEventListener("change", function (e) {
+        if (e.target.checked) { state.picks[t.id] = state.picks[t.id] || { ownerHours: t.hoursDefault, cadence: t.cadence, heads: 1 }; row.classList.add("is-on"); }
+        else { delete state.picks[t.id]; row.classList.remove("is-on"); }
+      });
+      return row;
+    });
+    var otherInput = h("input", { type: "text", placeholder: "e.g. Following up on proposals I keep forgetting" });
+    shell("hours",
+      h("div", {}, [
+        h("h2", { class: "step-title" }, ["We've already got your numbers" + firstName() + ". Now — what keeps slipping?"]),
+        h("p", { class: "step-help" }, ["The real leak isn't only what eats your day — it's the work you keep meaning to do but never have time for. Tick anything you forgot, and add the one thing you wish you did every week but don't."]),
       ]),
       [
         h("div", { class: "tasklist" }, rows),
-        h("div", { class: "btn-row" }, [h("button", { class: "btn", onclick: function () {
-          if (!Object.keys(state.picks).length) { flash("Keep at least one task to see your dashboard."); return; }
-          computeAndReveal();
-        } }, ["Build my dashboard →"])]),
+        h("div", { class: "field" }, [h("label", {}, ["Something not on the list? ", h("span", { class: "sub" }, ["(what you keep meaning to do)"])]), otherInput]),
+        h("div", { class: "btn-row" }, [h("button", { class: "btn", onclick: function () { addOther(otherInput.value); goToHours(); } }, ["Next: the hours →"])]),
       ]
+    );
+  }
+
+  function addOther(txt) {
+    txt = (txt || "").trim(); if (!txt) return;
+    state.custom = state.custom || {};
+    state.custom["custom_other"] = { label: txt.slice(0, 60), recoverPct: 0.40, hint: "The work that keeps slipping" };
+    state.picks["custom_other"] = { ownerHours: 2, cadence: "week", heads: 1 };
+  }
+
+  function goToHours() {
+    if (!Object.keys(state.picks).length) { flash("Keep at least one task to see your dashboard."); return; }
+    renderHoursStep();
+  }
+
+  /* ---- hours per task (final step before the dashboard) ---- */
+  function renderHoursStep() {
+    var rows = Object.keys(state.picks).map(function (id) {
+      var t = byId(id), p = state.picks[id];
+      var hoursInput = h("input", { type: "number", min: "0", step: "0.5", value: p.ownerHours, style: "max-width:84px" });
+      var cad = h("div", { class: "toggle-cadence" }, [mkCadBtn(p, "day", "/day"), mkCadBtn(p, "week", "/week")]);
+      hoursInput.addEventListener("input", function (e) { p.ownerHours = Math.max(0, parseFloat(e.target.value || "0")); });
+      var meta = (state.isTeam && p.heads > 1) ? h("span", { class: "h-sub" }, ["× " + p.heads + " people"]) : null;
+      return h("div", { class: "hours-row" }, [
+        h("div", {}, [h("div", { class: "h-name" }, [t.label]), h("div", { class: "h-sub" }, [t.hint])]),
+        h("div", { class: "hours-controls" }, [hoursInput, cad, meta]),
+      ]);
+    });
+    shell("rate",
+      h("div", {}, [
+        h("h2", { class: "step-title" }, ["How many hours" + firstName() + " — honestly?"]),
+        h("p", { class: "step-help" }, ["Per day or per week, your call. Round numbers are fine. This is the last step before your dashboard."]),
+      ]),
+      [h("div", {}, rows), h("div", { class: "btn-row" }, [h("button", { class: "btn", onclick: computeAndReveal }, ["Build my dashboard →"])])]
     );
   }
 
@@ -407,10 +465,23 @@
 
   function computeAndReveal() {
     normalizePicksToWeekly();
+    state.aiNarrative = null;
     state.results = compute();
     renderReveal();
     mirrorCapture();         // send results + "biggest leak + why" to Lisa (fire-and-forget)
-    fetchBuilds();           // ask the AI brain to personalise the build starters (optional)
+    fetchBuilds();           // AI personalises the build starters (when OpenRouter key set)
+    fetchNarrative();        // AI personalises the dashboard narrative (when OpenRouter key set)
+  }
+  function fetchNarrative() {
+    var R = state.results; if (!R || !R.per.length) return;
+    var top = R.per.slice(0, 5).map(function (x) { return { label: x.label, annual: Math.round(x.annual), pct: Math.round(x.pctOfTotal) }; });
+    var anyTeam = R.per.some(function (x) { return x.heads > 1; });
+    fetch("/api/eb-narrative", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ summary: { leakTotal: Math.round(R.totalAnnual), daily: Math.round(R.totalAnnual / 260), hoursYr: Math.round(R.totalRecYr), isTeam: anyTeam, believedLeak: state.believedLeak, numberOneMove: R.one ? R.one.label : "", rate: state.rate, top: top } }),
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (d && d.narrative && d.narrative.length) { state.aiNarrative = d.narrative; if (state._rebuildNarrative) state._rebuildNarrative(); } })
+      .catch(function () { /* keep the rich deterministic narrative */ });
   }
 
   /* ================= REVEAL + ROADMAP ================= */
@@ -540,6 +611,7 @@
 
     [ui.k1, ui.k2, ui.k3, ui.k4].forEach(function (k) { k.big._cur = 0; });
     setTab(state.tab);
+    state._rebuildNarrative = function () { if (ui.narrBody) buildNarrative(state.results); };
     update(true);
 
     /* ---------- inner ---------- */
@@ -600,12 +672,13 @@
         h("div", { class: "ico" }, ["📊"]),
         h("div", {}, [h("h2", {}, ["Executive Briefing — Your Time-Leak"]), h("p", {}, ["Limited to Limitless · " + R.per.length + " tasks · " + (anyTeam ? "Team model" : "Solo operator")])]),
       ]));
-      var paras = [
+      var useAI = state.aiNarrative && state.aiNarrative.length;
+      var paras = useAI ? state.aiNarrative : [
         "Every working day, your operation quietly bleeds <b class='red'>" + usd(R.totalAnnual / 260) + "</b> in recoverable cost — not from tools or ads, but from the manual work buried in your week. Across " + R.per.length + " task" + (R.per.length === 1 ? "" : "s") + (anyTeam ? " across your team" : "") + ", that overhead compounds into <b class='red'>" + usd(R.totalAnnual) + "</b> a year.",
         "Your money bleeds fastest from <b>" + escText(one.label) + "</b> — about <b class='amber'>" + usd(one.annual) + "</b> a year, roughly " + Math.round(one.pctOfTotal) + "% of the whole leak. " + (state.believedLeak ? (R.believedMatchesOne ? "Your gut already knew it — you named this as your worst leak. Trust that and start there." : "You guessed elsewhere (&ldquo;" + escText(state.believedLeak) + "&rdquo;), but the math points here. The leak you can't see is the one that's survived this long.") : "It's the first thing to hand to AI."),
         "Fix your top three — <b>" + top3.map(function (x) { return escText(x.label); }).join(", ") + "</b> — and you pull back about <b class='amber'>" + usd(sum3) + "</b> a year. These aren't new costs to find; they're hours you already pay for, spent on work a well-built AI assistant can carry. The next screen turns each one into a reusable project in your own AI, step by step.",
       ];
-      paras.forEach(function (txt, i) { ui.narrBody.appendChild(h("div", { class: "narr-para" }, [h("span", { class: "n" }, [String(i + 1)]), h("p", { html: txt })])); });
+      paras.forEach(function (txt, i) { ui.narrBody.appendChild(h("div", { class: "narr-para" }, [h("span", { class: "n" }, [String(i + 1)]), (useAI ? h("p", {}, [txt]) : h("p", { html: txt }))])); });
       var rows = R.per.map(function (x, i) {
         return h("tr", {}, [
           h("td", { html: '<span class="dot-s" style="background:' + heat(i) + '"></span>' + escText(x.label) }),
@@ -752,7 +825,17 @@
   }
 
   /* ---------- misc ---------- */
-  function byId(id) { return CFG.tasks.filter(function (t) { return t.id === id; })[0]; }
+  function byId(id) {
+    var t = CFG.tasks.filter(function (x) { return x.id === id; })[0];
+    if (t) return t;
+    var c = state.custom && state.custom[id];
+    if (c) return {
+      id: id, label: c.label, hint: c.hint || "The work that keeps slipping", benchmark: c.benchmark || "A system that finally makes this happen.",
+      recoverPct: c.recoverPct || 0.40, hoursDefault: c.hoursDefault || 2, cadence: "week",
+      project: c.project || { instructions: "You help me finally get to “" + c.label + "” every week, consistently and without it slipping.", context: "What this task involves for my business and what 'done well' looks like.", sample: "One example of doing it the way I'd want." },
+    };
+    return undefined;
+  }
   function flash(msg) {
     var n = h("div", { class: "card error", style: "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;max-width:90%" }, [msg]);
     document.body.appendChild(n); setTimeout(function () { n.remove(); }, 4200);
