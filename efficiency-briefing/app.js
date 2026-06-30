@@ -205,7 +205,7 @@
         h("div", { class: "hours-controls" }, ["×", headsInput, h("span", { class: "h-sub" }, ["people do this"])]),
       ]);
       var row = h("div", { class: "task-pick" + (on ? " is-on" : ""), style: "display:block" }, []);
-      var head = h("label", { style: "display:flex;align-items:flex-start;gap:11px;cursor:pointer" }, [chk, h("span", {}, [h("span", { class: "t-label" }, [t.label]), h("br"), h("span", { class: "t-hint" }, [t.benchmark])])]);
+      var head = h("label", { style: "display:flex;align-items:flex-start;gap:11px;cursor:pointer" }, [chk, h("span", {}, [h("span", { class: "t-label" }, [t.label]), h("br"), h("span", { class: "t-hint" }, [t.hint])])]);
       chk.addEventListener("change", function (e) {
         if (e.target.checked) { state.picks[t.id] = p; detail.style.display = "flex"; row.classList.add("is-on"); }
         else { delete state.picks[t.id]; detail.style.display = "none"; row.classList.remove("is-on"); }
@@ -586,7 +586,7 @@
           h("div", { class: "cat-big", style: "color:" + col }, [usdK(x.annual)]),
           h("div", { class: "cat-hrs" }, [fmtHours(x.recYr) + " hrs lost/yr"]),
           h("div", { class: "cat-bar" }, [h("i", { style: "width:" + Math.max(4, x.pctOfTotal) + "%;background:" + col }, [])]),
-          h("div", { class: "cat-desc" }, [x.benchmark]),
+          h("div", { class: "cat-desc" }, [x.hint]),
         ]));
       });
       buildNarrative(R);
