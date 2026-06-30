@@ -22,8 +22,8 @@ export default async function handler(req, res) {
       line_items: [lineItem],
       payment_method_types: ["card"],
       allow_promotion_codes: true,
-      success_url: base + "/Efficiency-Briefing?session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: base + "/Efficiency-Briefing",
+      success_url: base + "/efficiency-briefing?session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: base + "/efficiency-briefing",
     });
     res.status(200).json({ url: session.url });
   } catch (err) {

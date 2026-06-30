@@ -1,4 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "redirects": [
+    { "source": "/Efficiency-Briefing", "destination": "/efficiency-briefing", "permanent": true },
+    { "source": "/Efficiency-Briefing/:path*", "destination": "/efficiency-briefing/:path*", "permanent": true }
+  ]
 }

@@ -61,7 +61,7 @@
     clear(app); appMode(false);
     var s = CFG.sales;
     var hero = h("section", { class: "section hero" }, [
-      h("img", { class: "seo-badge", src: "/Efficiency-Briefing/assets/briefing-badge.png", alt: "The Efficiency Briefing", width: "168", height: "168", style: "display:block;margin:0 auto 8px" }),
+      h("img", { class: "seo-badge", src: "/efficiency-briefing/assets/briefing-badge.png", alt: "The Efficiency Briefing", width: "168", height: "168", style: "display:block;margin:0 auto 8px" }),
       h("p", { class: "eyebrow" }, [s.eyebrow]),
       h("h1", { html: '<span class="chrome">' + s.headline + "</span>" }),
       h("p", { class: "lede" }, [s.subhead]),

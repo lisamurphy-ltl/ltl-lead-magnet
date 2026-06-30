@@ -6,7 +6,7 @@
 - [Where Your Hours Go — Time-Leak Calculator](https://hoursback.limitedtolimitless.com/time-eaters): A free 2-minute tool that shows service-business owners how many hours and dollars they lose to repetitive tasks each year, plus two copy-paste AI prompts to reclaim that time. No signup to start.
 
 ## Paid tools
-- [The Efficiency Briefing ($97)](https://hoursback.limitedtolimitless.com/Efficiency-Briefing): A $97 interactive diagnostic for professional-services owners. It quantifies the annual hours and dollars a team loses across all ten time-leaking tasks, ranks the top 3 fixes, and gives step-by-step instructions to build each fix into the owner's own AI (ChatGPT, Claude, or Gemini), plus an editable weekly schedule. Answers carry over from the free Time-Leak Calculator. Make the invisible leak visible — see it, price it, fix it.
+- [The Efficiency Briefing ($97)](https://hoursback.limitedtolimitless.com/efficiency-briefing): A $97 interactive diagnostic for professional-services owners. It quantifies the annual hours and dollars a team loses across all ten time-leaking tasks, ranks the top 3 fixes, and gives step-by-step instructions to build each fix into the owner's own AI (ChatGPT, Claude, or Gemini), plus an editable weekly schedule. Answers carry over from the free Time-Leak Calculator. Make the invisible leak visible — see it, price it, fix it.
 
 ## Key facts
 - Repetitive admin can consume a full day or more each week for a business owner — by some estimates close to a third of the working week.
