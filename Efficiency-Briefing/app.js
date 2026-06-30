@@ -87,6 +87,8 @@
   }
 
   function startCheckout() {
+    var link = CFG.price && CFG.price.paymentLinkUrl;
+    if (link) { location.href = link; return; }   // Stripe Payment Link, if configured
     var btn = document.getElementById("buyBtn");
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Opening secure checkout…'; }
     fetch("/api/eb-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })

@@ -36,6 +36,10 @@ const CONFIG = {
     currencyCode: "usd",
     label: "$97",
     productName: "The Efficiency Briefing",
+    // Paste your Stripe Payment Link here (https://buy.stripe.com/...). When set, the
+    // "Show me my number" button goes straight to it. Leave "" to use the built-in
+    // Stripe Checkout function (/api/eb-checkout). Stripe product: prod_UmxDujUWUDZtrc.
+    paymentLinkUrl: "",
   },
 
   // ---- THE MATH (per task → annual $) --------------------------------
