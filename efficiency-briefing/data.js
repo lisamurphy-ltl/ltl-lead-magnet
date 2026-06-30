@@ -75,8 +75,8 @@ const CONFIG = {
       recoverPct: 0.45, recoverMin: 0.30, recoverMax: 0.60,
       promptName: "The Inbox Triage Sorter",
       savesNote: "Typically saves 15–30 min per inbox session",
-      benchmark: "~250 emails/day ≈ 3 hrs → ~45 min with an AI triage project",
-      defaultCadence: "Daily — first thing, 10 minutes",
+      benchmark: "An inbox that sorts and drafts itself — instead of running through you.",
+      defaultCadence: "Daily — first thing",
       prompt:
 `Act as my executive operations filter. Review the email or message below and sort it into one of five categories: Reply Now, Reply Later, Delegate, Archive, or Decision Needed. Then draft the next best action in my voice: direct, warm, and clear.
 
@@ -99,8 +99,8 @@ Return: category, why, next action, draft reply if needed, and estimated time sa
       recoverPct: 0.35, recoverMin: 0.25, recoverMax: 0.50,
       promptName: "The Meeting Shrinker",
       savesNote: "Typically saves 30–60 min per meeting",
-      benchmark: "A 60-min drifting call → a 30-min decision call with a pre-built agenda",
-      defaultCadence: "Before each meeting — 5 minutes",
+      benchmark: "Calls that arrive with an agenda and leave with a decision.",
+      defaultCadence: "Before each meeting",
       prompt:
 `Act as a meeting architect. Turn the meeting details below into a tight agenda designed to reach a decision or produce a clear next action.
 
@@ -124,8 +124,8 @@ Return: purpose, decision needed, time-blocked agenda, pre-meeting questions, as
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.65,
       promptName: "The Follow-Up Loop Closer",
       savesNote: "Typically saves 20–45 min per meeting",
-      benchmark: "30–45 min of writing up notes → a 5-min paste-and-send",
-      defaultCadence: "Right after each call — 5 minutes",
+      benchmark: "Raw notes become a ready-to-send recap — not another to-do.",
+      defaultCadence: "Right after each call",
       prompt:
 `Act as my post-meeting follow-up assistant. Based on the notes below, create a concise follow-up that confirms decisions, owners, deadlines, and unresolved questions.
 
@@ -148,8 +148,8 @@ Return: decisions made, action items with owners/deadlines, open questions, risk
       recoverPct: 0.55, recoverMin: 0.40, recoverMax: 0.65,
       promptName: "The Referral Ask Builder",
       savesNote: "Typically saves 45–90 min per referral push",
-      benchmark: "An hour of agonising over the wording → a 10-min, relationship-safe ask",
-      defaultCadence: "Weekly — one ask, 10 minutes",
+      benchmark: "A clear, relationship-safe ask you don't have to agonise over.",
+      defaultCadence: "Weekly — one ask",
       prompt:
 `Act as my referral message strategist. Create a clear, relationship-safe referral ask for the person described below.
 
@@ -173,8 +173,8 @@ Return: direct ask, who-to-look-for line, forwardable intro, softer version, and
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Lead Nurture Check-In",
       savesNote: "Typically saves 30–60 min per follow-up block",
-      benchmark: "A morning of writing 'just checking in' notes → a 15-min personalised batch",
-      defaultCadence: "Twice a week — 15 minutes",
+      benchmark: "Warm leads nudged forward — without the blank-page stall.",
+      defaultCadence: "Twice a week",
       prompt:
 `Act as my warm lead nurture assistant. Draft a thoughtful check-in message that reconnects without pressure and moves the conversation toward a useful next step.
 
@@ -198,8 +198,8 @@ Return: short check-in, personal version, resource angle, low-pressure CTA, and 
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Testimonial Extractor",
       savesNote: "Typically saves 30–45 min per testimonial",
-      benchmark: "Staring at a wall of client praise → 3 ready-to-use proof lines in minutes",
-      defaultCadence: "Weekly — whenever praise comes in, 10 minutes",
+      benchmark: "Client praise turned into usable, ready-to-post proof.",
+      defaultCadence: "Weekly — as praise comes in",
       prompt:
 `Act as my client proof strategist. Review the client feedback below and extract usable testimonial language without exaggerating or changing the meaning.
 
@@ -221,8 +221,8 @@ Return: 3 testimonial options, short proof line, specific result, claims needing
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Relationship Map Refresher",
       savesNote: "Typically saves 60–120 min per week",
-      benchmark: "Two hours of 'who am I forgetting' → a 15-min ranked list of who to touch",
-      defaultCadence: "Weekly — Monday, 15 minutes",
+      benchmark: "A ranked list of who to reach out to — no more 'who am I forgetting?'",
+      defaultCadence: "Weekly — Monday",
       prompt:
 `Act as my relationship asset mapper. Use the contact list or notes below to identify warm relationships, referral partners, dormant leads, and people who should receive value this week.
 
@@ -244,8 +244,8 @@ Return: top 5 people to contact, why each matters, best message angle, suggested
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Sunday Clarity Brief",
       savesNote: "Typically saves 1–2 hours per week",
-      benchmark: "A scattered 2-hour Sunday → a focused 30-min planning ritual",
-      defaultCadence: "Weekly — Sunday, 30 minutes",
+      benchmark: "A clear week, planned before it plans you.",
+      defaultCadence: "Weekly — Sunday",
       prompt:
 `Act as my weekly operating strategist. Build a Sunday Clarity Brief that helps me enter the week with priorities, boundaries, decisions, and recovery space already named.
 
@@ -268,7 +268,7 @@ Return: top 3 priorities, what must not get attention, decisions to pre-make, ta
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Decision Floor Builder",
       savesNote: "Typically saves 1–3 hours in heavy weeks",
-      benchmark: "Spinning out when a week breaks → a 10-min 'minimum viable week' reset",
+      benchmark: "A calm reset plan when a week goes sideways.",
       defaultCadence: "As needed — when a week goes sideways",
       prompt:
 `Act as my decision-floor strategist. Help me define the minimum viable actions that keep my business moving during a demanding week.
@@ -292,8 +292,8 @@ Return: minimum viable week, minimum viable day, three non-negotiables, what can
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Friday Profit Debrief",
       savesNote: "Typically saves 45–90 min per week",
-      benchmark: "An hour of vague 'how did the week go' → a 15-min structured debrief",
-      defaultCadence: "Weekly — Friday, 15 minutes",
+      benchmark: "A structured debrief that turns this week into next week's plan.",
+      defaultCadence: "Weekly — Friday",
       prompt:
 `Act as my Friday Profit Debrief partner. Review my week and identify what worked, what leaked time, and what needs to change next week.
 
