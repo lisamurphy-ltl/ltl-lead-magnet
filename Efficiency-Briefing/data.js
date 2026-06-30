@@ -39,7 +39,7 @@ const CONFIG = {
     // Paste your Stripe Payment Link here (https://buy.stripe.com/...). When set, the
     // "Show me my number" button goes straight to it. Leave "" to use the built-in
     // Stripe Checkout function (/api/eb-checkout). Stripe product: prod_UmxDujUWUDZtrc.
-    paymentLinkUrl: "",
+    paymentLinkUrl: "https://buy.stripe.com/fZu9AUeph7ydbcc83Ac7u0o",
   },
 
   // ---- THE MATH (per task → annual $) --------------------------------
