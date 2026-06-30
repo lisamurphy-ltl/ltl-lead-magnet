@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const session = await stripe.checkout.sessions.retrieve(sid);
-    const paid = session && session.payment_status === "paid";
+    const paid = session && (session.status === "complete" || session.payment_status === "paid" || session.payment_status === "no_payment_required");
     const details = (session && session.customer_details) || {};
     const out = { paid: !!paid, email: details.email || "", name: details.name || "", contactId: sid };
     if (paid && process.env.GHL_INBOUND_WEBHOOK_URL) {
