@@ -143,7 +143,9 @@
       .catch(function () { renderSales(); flash("Couldn't verify owner access."); });
   }
   function previewMaybe() {
-    // ?preview=1 unlocks ONLY before Stripe is configured — so it can't skip payment in production
+    // Payment is live once a Stripe link is wired → close the public ?preview bypass.
+    // (Owner/testing: use promo code OWNERTEST at checkout for a free $0 unlock.)
+    if (CFG.price && CFG.price.paymentLinkUrl) { renderSales(); flash("Payment is live — buy, or use code OWNERTEST at checkout, to unlock."); return; }
     fetch("/api/eb-admin").then(function (r) { return r.ok ? r.json() : { paymentConfigured: false }; })
       .then(function (d) {
         if (d && d.paymentConfigured) { renderSales(); flash("Preview is off now that payment is live — use your owner link."); }
