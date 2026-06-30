@@ -535,7 +535,7 @@
       return { big: big, prog: prog, card: h("div", { class: "kpi " + cls }, [h("span", { class: "kpi-ico" }, [icon]), big, h("div", { class: "kpi-lbl" }, [lbl]), h("div", { class: "kpi-desc" }, [desc]), h("div", { class: "kpi-prog" }, [prog])]) };
     }
     ui.k1 = kpi("is-danger", "🔴", "Annual leak", "Recoverable cost lost to manual work every year");
-    ui.k2 = kpi("is-danger", "⏱", "Hours back / year", "Hours AI can hand back to you");
+    ui.k2 = kpi("is-danger", "⏱", "Hours back / year", "The hours strategic operations adjustments can hand back to you.");
     ui.k3 = kpi("is-accent", "📉", "Daily burn rate", "Bleeding every working day you wait");
     ui.k4 = kpi("is-accent", "💸", "Return on $97", "What this Briefing pays back, yearly");
     body.appendChild(h("div", { class: "kpi-row" }, [ui.k1.card, ui.k2.card, ui.k3.card, ui.k4.card]));
@@ -635,8 +635,8 @@
       var useAI = state.aiNarrative && state.aiNarrative.length;
       var paras = useAI ? state.aiNarrative : [
         "Every working day, your operation quietly bleeds <b class='red'>" + usd(R.totalAnnual / 260) + "</b> in recoverable cost — not from tools or ads, but from the manual work buried in your week. Across " + R.per.length + " task" + (R.per.length === 1 ? "" : "s") + (anyTeam ? " across your team" : "") + ", that overhead compounds into <b class='red'>" + usd(R.totalAnnual) + "</b> a year.",
-        "Your money bleeds fastest from <b>" + escText(one.label) + "</b> — about <b class='amber'>" + usd(one.annual) + "</b> a year, roughly " + Math.round(one.pctOfTotal) + "% of the whole leak. " + (state.believedLeak ? (R.believedMatchesOne ? "Your gut already knew it — you named this as your worst leak. Trust that and start there." : "You guessed elsewhere (&ldquo;" + escText(state.believedLeak) + "&rdquo;), but the math points here. The leak you can't see is the one that's survived this long.") : "It's the first thing to hand to AI."),
-        "Fix your top three — <b>" + top3.map(function (x) { return escText(x.label); }).join(", ") + "</b> — and you pull back about <b class='amber'>" + usd(sum3) + "</b> a year. These aren't new costs to find; they're hours you already pay for, spent on work a well-built AI assistant can carry. The next screen turns each one into a reusable project in your own AI, step by step.",
+        "Your money bleeds fastest from <b>" + escText(one.label) + "</b> — about <b class='amber'>" + usd(one.annual) + "</b> a year, roughly " + Math.round(one.pctOfTotal) + "% of the whole leak. " + (state.believedLeak ? (R.believedMatchesOne ? "Your gut already knew it — you named this as your worst leak. Trust that and start there." : "You guessed elsewhere (&ldquo;" + escText(state.believedLeak) + "&rdquo;), but the math points here. The leak you can't see is the one that's survived this long.") : "It's the first place to start."),
+        "Fix your top three — <b>" + top3.map(function (x) { return escText(x.label); }).join(", ") + "</b> — and you pull back about <b class='amber'>" + usd(sum3) + "</b> a year. These aren't new costs to find; they're hours you already pay for, spent on work the right operational systems can carry for you. The next screen shows you exactly how to win each one back, step by step.",
       ];
       paras.forEach(function (txt, i) { ui.narrBody.appendChild(h("div", { class: "narr-para" }, [h("span", { class: "n" }, [String(i + 1)]), (useAI ? h("p", {}, [txt]) : h("p", { html: txt }))])); });
       var rows = R.per.map(function (x, i) {
