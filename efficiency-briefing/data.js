@@ -70,7 +70,7 @@ const CONFIG = {
     {
       id: "inbox",
       label: "Email & inbox triage",
-      hint: "Sorting, deciding and replying — every single day",
+      hint: "The inbox that never empties — and only you clear it.",
       hoursDefault: 1, cadence: "day",
       recoverPct: 0.45, recoverMin: 0.30, recoverMax: 0.60,
       promptName: "The Inbox Triage Sorter",
@@ -94,7 +94,7 @@ Return: category, why, next action, draft reply if needed, and estimated time sa
     {
       id: "meetings",
       label: "Meetings that run long",
-      hint: "Calls that drift because no one came with a decision",
+      hint: "Calls that eat the afternoon and end with no decision.",
       hoursDefault: 4, cadence: "week",
       recoverPct: 0.35, recoverMin: 0.25, recoverMax: 0.50,
       promptName: "The Meeting Shrinker",
@@ -119,7 +119,7 @@ Return: purpose, decision needed, time-blocked agenda, pre-meeting questions, as
     {
       id: "followups",
       label: "Meeting notes & follow-ups",
-      hint: "Writing up who-owns-what after every call",
+      hint: "The recap you owe everyone that never gets written.",
       hoursDefault: 3, cadence: "week",
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.65,
       promptName: "The Follow-Up Loop Closer",
@@ -143,7 +143,7 @@ Return: decisions made, action items with owners/deadlines, open questions, risk
     {
       id: "referrals",
       label: "Asking for referrals",
-      hint: "Drafting the ask so it actually lands",
+      hint: "The ask you keep meaning to send — and never do.",
       hoursDefault: 1.5, cadence: "week",
       recoverPct: 0.55, recoverMin: 0.40, recoverMax: 0.65,
       promptName: "The Referral Ask Builder",
@@ -168,7 +168,7 @@ Return: direct ask, who-to-look-for line, forwardable intro, softer version, and
     {
       id: "leadnurture",
       label: "Following up with warm leads",
-      hint: "Reconnecting before they go cold",
+      hint: "Warm leads going cold while you're heads-down.",
       hoursDefault: 3, cadence: "week",
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Lead Nurture Check-In",
@@ -193,7 +193,7 @@ Return: short check-in, personal version, resource angle, low-pressure CTA, and 
     {
       id: "testimonials",
       label: "Capturing testimonials & proof",
-      hint: "Turning scattered client praise into usable proof",
+      hint: "Glowing praise that never makes it anywhere useful.",
       hoursDefault: 1, cadence: "week",
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Testimonial Extractor",
@@ -216,7 +216,7 @@ Return: 3 testimonial options, short proof line, specific result, claims needing
     {
       id: "relationships",
       label: "Managing your network",
-      hint: "Remembering who to nurture this week",
+      hint: "The people you meant to reach out to — and forgot.",
       hoursDefault: 2, cadence: "week",
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Relationship Map Refresher",
@@ -239,7 +239,7 @@ Return: top 5 people to contact, why each matters, best message angle, suggested
     {
       id: "sundaybrief",
       label: "Weekly planning",
-      hint: "Setting the week before it sets you",
+      hint: "Mondays that start in reaction, not control.",
       hoursDefault: 2, cadence: "week",
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Sunday Clarity Brief",
@@ -263,7 +263,7 @@ Return: top 3 priorities, what must not get attention, decisions to pre-make, ta
     {
       id: "decisionfloor",
       label: "Re-planning under pressure",
-      hint: "Rebuilding the plan when a week goes sideways",
+      hint: "When the week breaks, everything's urgent and nothing's clear.",
       hoursDefault: 2, cadence: "week",
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Decision Floor Builder",
@@ -287,7 +287,7 @@ Return: minimum viable week, minimum viable day, three non-negotiables, what can
     {
       id: "fridaydebrief",
       label: "Weekly review & debrief",
-      hint: "Finding what worked before you repeat the week",
+      hint: "Another week gone with no read on what worked.",
       hoursDefault: 1.5, cadence: "week",
       recoverPct: 0.50, recoverMin: 0.35, recoverMax: 0.60,
       promptName: "The Friday Profit Debrief",
