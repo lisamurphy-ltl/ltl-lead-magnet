@@ -191,65 +191,52 @@
 
   function firstName() { return state.name ? (", " + String(state.name).split(" ")[0]) : ""; }
 
-  /* ---- transition / branch page (after carry-forward, BEFORE the hours) ---- */
+  /* ---- capture page (after carry-forward): tasks + hours + people, together, one page ---- */
   function renderTransition() {
-    if (state.isTeam) return renderTeamCapture();
-    return renderSoloCapture();
-  }
-
-  // TEAM: "we already have your data — now capture your team" (per-task headcount)
-  function renderTeamCapture() {
-    var rows = CFG.tasks.map(function (t) {
-      var on = !!state.picks[t.id];
-      var p = state.picks[t.id] || { ownerHours: t.hoursDefault, cadence: t.cadence, heads: 2 };
-      var chk = h("input", { type: "checkbox", checked: on ? "checked" : null, "aria-label": t.label });
-      var headsInput = h("input", { type: "number", min: "1", step: "1", value: p.heads, style: "max-width:74px" });
-      headsInput.addEventListener("input", function (e) { p.heads = Math.max(1, parseInt(e.target.value || "1", 10)); });
-      var detail = h("div", { style: "display:" + (on ? "flex" : "none") + ";align-items:center;gap:8px;margin-top:8px;padding-left:29px" }, [h("span", { class: "h-sub" }, ["How many people do this? ×"]), headsInput]);
-      var row = h("div", { class: "task-pick" + (on ? " is-on" : ""), style: "display:block" }, []);
-      var head = h("label", { style: "display:flex;align-items:flex-start;gap:11px;cursor:pointer" }, [chk, h("span", {}, [h("span", { class: "t-label" }, [t.label]), h("br"), h("span", { class: "t-hint" }, [t.hint])])]);
-      chk.addEventListener("change", function (e) {
-        if (e.target.checked) { state.picks[t.id] = p; detail.style.display = "flex"; row.classList.add("is-on"); }
-        else { delete state.picks[t.id]; detail.style.display = "none"; row.classList.remove("is-on"); }
-      });
-      row.appendChild(head); row.appendChild(detail);
-      return row;
-    });
-    shell("hours",
-      h("div", {}, [
-        h("h2", { class: "step-title" }, ["We've already got your numbers" + firstName() + ". Now — your team."]),
-        h("p", { class: "step-help" }, ["You're not the only one carrying this work. Tick everything your team also touches and tell us how many people do each — that's where the leak really compounds. Hours come next."]),
-      ]),
-      [h("div", { class: "tasklist" }, rows), h("div", { class: "btn-row" }, [h("button", { class: "btn", onclick: goToHours }, ["Next: the hours →"])])]
-    );
-  }
-
-  // SOLO: "we already have your data — now what keeps slipping?" (forgotten / never-have-time-for; counts in the leak)
-  function renderSoloCapture() {
-    var rows = CFG.tasks.map(function (t) {
-      var on = !!state.picks[t.id];
-      var row = h("label", { class: "task-pick" + (on ? " is-on" : ""), style: "display:flex;align-items:flex-start;gap:11px;cursor:pointer" }, [
-        h("input", { type: "checkbox", checked: on ? "checked" : null, "aria-label": t.label }),
-        h("span", {}, [h("span", { class: "t-label" }, [t.label]), h("br"), h("span", { class: "t-hint" }, [t.hint])]),
-      ]);
-      row.querySelector("input").addEventListener("change", function (e) {
-        if (e.target.checked) { state.picks[t.id] = state.picks[t.id] || { ownerHours: t.hoursDefault, cadence: t.cadence, heads: 1 }; row.classList.add("is-on"); }
-        else { delete state.picks[t.id]; row.classList.remove("is-on"); }
-      });
-      return row;
-    });
+    var team = !!state.isTeam;
+    var rows = CFG.tasks.map(function (t) { return captureRow(t); });
+    var head = team
+      ? h("div", {}, [
+          h("h2", { class: "step-title" }, ["We've already got your numbers" + firstName() + ". Now — your team."]),
+          h("p", { class: "step-help" }, ["You're not the only one carrying this work. Confirm each task, the average hours it takes, and how many people touch it — that's where the leak really compounds."]),
+        ])
+      : h("div", {}, [
+          h("h2", { class: "step-title" }, ["We've already got your numbers" + firstName() + ". Now — what keeps slipping?"]),
+          h("p", { class: "step-help" }, ["The real leak isn't only what eats your day — it's the work you keep meaning to do but never have time for. Confirm the hours on each, tick anything you forgot, and add the one thing you wish you did every week but don't."]),
+        ]);
     var otherInput = h("input", { type: "text", placeholder: "e.g. Following up on proposals I keep forgetting" });
-    shell("hours",
-      h("div", {}, [
-        h("h2", { class: "step-title" }, ["We've already got your numbers" + firstName() + ". Now — what keeps slipping?"]),
-        h("p", { class: "step-help" }, ["The real leak isn't only what eats your day — it's the work you keep meaning to do but never have time for. Tick anything you forgot, and add the one thing you wish you did every week but don't."]),
-      ]),
-      [
-        h("div", { class: "tasklist" }, rows),
-        h("div", { class: "field" }, [h("label", {}, ["Something not on the list? ", h("span", { class: "sub" }, ["(what you keep meaning to do)"])]), otherInput]),
-        h("div", { class: "btn-row" }, [h("button", { class: "btn", onclick: function () { addOther(otherInput.value); goToHours(); } }, ["Next: the hours →"])]),
-      ]
-    );
+    var kids = [h("div", { class: "tasklist" }, rows)];
+    if (!team) kids.push(h("div", { class: "field" }, [h("label", {}, ["Something not on the list? ", h("span", { class: "sub" }, ["(what you keep meaning to do)"])]), otherInput]));
+    kids.push(h("div", { class: "btn-row" }, [h("button", { class: "btn", onclick: function () {
+      if (!team) addOther(otherInput.value);
+      if (!Object.keys(state.picks).length) { flash("Keep at least one task to see your dashboard."); return; }
+      computeAndReveal();
+    } }, ["Build my dashboard →"])]));
+    shell("hours", head, kids);
+  }
+
+  // one task row: checkbox + pain, and (when ticked) avg hours + day/week + how-many-people
+  function captureRow(t) {
+    var on = !!state.picks[t.id];
+    var p = state.picks[t.id] || { ownerHours: t.hoursDefault, cadence: t.cadence, heads: state.isTeam ? 2 : 1 };
+    var chk = h("input", { type: "checkbox", checked: on ? "checked" : null, "aria-label": t.label });
+    var hoursInput = h("input", { type: "number", min: "0", step: "0.5", value: p.ownerHours, style: "max-width:78px" });
+    var cad = h("div", { class: "toggle-cadence" }, [mkCadBtn(p, "day", "/day"), mkCadBtn(p, "week", "/week")]);
+    var headsInput = h("input", { type: "number", min: "1", step: "1", value: p.heads, style: "max-width:62px" });
+    hoursInput.addEventListener("input", function (e) { p.ownerHours = Math.max(0, parseFloat(e.target.value || "0")); });
+    headsInput.addEventListener("input", function (e) { p.heads = Math.max(1, parseInt(e.target.value || "1", 10)); });
+    var detail = h("div", { style: "display:" + (on ? "flex" : "none") + ";flex-wrap:wrap;gap:10px 20px;align-items:center;margin-top:10px;padding-left:29px" }, [
+      h("div", { class: "hours-controls" }, [h("span", { class: "h-sub" }, ["Avg hours"]), hoursInput, cad]),
+      h("div", { class: "hours-controls" }, [h("span", { class: "h-sub" }, ["How many people? ×"]), headsInput]),
+    ]);
+    var row = h("div", { class: "task-pick" + (on ? " is-on" : ""), style: "display:block" }, []);
+    var label = h("label", { style: "display:flex;align-items:flex-start;gap:11px;cursor:pointer" }, [chk, h("span", {}, [h("span", { class: "t-label" }, [t.label]), h("br"), h("span", { class: "t-hint" }, [t.hint])])]);
+    chk.addEventListener("change", function (e) {
+      if (e.target.checked) { state.picks[t.id] = p; detail.style.display = "flex"; row.classList.add("is-on"); }
+      else { delete state.picks[t.id]; detail.style.display = "none"; row.classList.remove("is-on"); }
+    });
+    row.appendChild(label); row.appendChild(detail);
+    return row;
   }
 
   function addOther(txt) {
@@ -257,33 +244,6 @@
     state.custom = state.custom || {};
     state.custom["custom_other"] = { label: txt.slice(0, 60), recoverPct: 0.40, hint: "The work that keeps slipping" };
     state.picks["custom_other"] = { ownerHours: 2, cadence: "week", heads: 1 };
-  }
-
-  function goToHours() {
-    if (!Object.keys(state.picks).length) { flash("Keep at least one task to see your dashboard."); return; }
-    renderHoursStep();
-  }
-
-  /* ---- hours per task (final step before the dashboard) ---- */
-  function renderHoursStep() {
-    var rows = Object.keys(state.picks).map(function (id) {
-      var t = byId(id), p = state.picks[id];
-      var hoursInput = h("input", { type: "number", min: "0", step: "0.5", value: p.ownerHours, style: "max-width:84px" });
-      var cad = h("div", { class: "toggle-cadence" }, [mkCadBtn(p, "day", "/day"), mkCadBtn(p, "week", "/week")]);
-      hoursInput.addEventListener("input", function (e) { p.ownerHours = Math.max(0, parseFloat(e.target.value || "0")); });
-      var meta = (state.isTeam && p.heads > 1) ? h("span", { class: "h-sub" }, ["× " + p.heads + " people"]) : null;
-      return h("div", { class: "hours-row" }, [
-        h("div", {}, [h("div", { class: "h-name" }, [t.label]), h("div", { class: "h-sub" }, [t.hint])]),
-        h("div", { class: "hours-controls" }, [hoursInput, cad, meta]),
-      ]);
-    });
-    shell("rate",
-      h("div", {}, [
-        h("h2", { class: "step-title" }, ["How many hours" + firstName() + " — honestly?"]),
-        h("p", { class: "step-help" }, ["Per day or per week, your call. Round numbers are fine. This is the last step before your dashboard."]),
-      ]),
-      [h("div", {}, rows), h("div", { class: "btn-row" }, [h("button", { class: "btn", onclick: computeAndReveal }, ["Build my dashboard →"])])]
-    );
   }
 
   /* ================= STEP CHROME ================= */
@@ -485,7 +445,7 @@
   }
 
   /* ================= REVEAL + ROADMAP ================= */
-  function heat(i) { return ["#ef4444", "#f59e0b", "#fbbf24", "#fb7185", "#f97316", "#8b95a7"][Math.min(i, 5)]; }
+  function heat(i) { return ["#ef4444", "#ff8a3d", "#ffb37d", "#7dc0f0", "#34a8c0", "#8b95a7"][Math.min(i, 5)]; }
   function escText(s) { return String(s == null ? "" : s).replace(/[<>&"]/g, function (c) { return ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]; }); }
   function usdK(n) { n = Math.round(n); var a = Math.abs(n); if (a >= 1000) { var k = n / 1000; var d = a < 10000 ? 1 : 0; return "$" + (Math.round(k * Math.pow(10, d)) / Math.pow(10, d)) + "K"; } return "$" + n.toLocaleString("en-US"); }
   function animateTo(el, to, fmt) {

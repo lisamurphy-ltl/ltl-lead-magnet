@@ -15,8 +15,8 @@
   --muted: 220 14% 15%;
   --muted-fg: 215 14% 52%;
 
-  --amber: 38 92% 52%;      /* #f59e0b */
-  --amber-l: 43 96% 56%;    /* #fbbf24 amber-400 */
+  --amber: 24 100% 62%;     /* #FF8A3D — LtL brand ember (accent/action) */
+  --amber-l: 28 100% 71%;   /* #FFB37D — ember light */
   --red: 0 84% 60%;         /* #ef4444 red-500 */
   --red-l: 0 91% 71%;       /* #f87171 red-400 */
   --red-d: 0 72% 51%;       /* #dc2626 red-600 */
@@ -36,9 +36,9 @@
   --c-green: hsl(var(--green));
 
   --tint-red: rgba(239,68,68,0.10);
-  --tint-amber: rgba(245,158,11,0.10);
+  --tint-amber: rgba(255,138,61,0.10);
   --bd-red: rgba(185,28,28,0.5);
-  --bd-amber: rgba(245,158,11,0.5);
+  --bd-amber: rgba(255,138,61,0.55);
 
   --radius: 0.75rem;
   --radius-sm: 0.5rem;
@@ -126,7 +126,7 @@ h1,h2,h3,h4 { margin: 0 0 0.4em; line-height: 1.15; font-weight: 700; }
 .tasklist { display: grid; gap: 9px; margin: 16px 0; }
 .task-pick { display: flex; align-items: flex-start; gap: 11px; padding: 12px 14px; cursor: pointer; border: 1px solid var(--c-border); border-radius: var(--radius-sm); background: hsl(var(--card)); transition: border-color .15s, background .15s; }
 .task-pick:hover { border-color: var(--steel-mid); }
-.task-pick.is-on { border-color: var(--bd-amber); background: var(--tint-amber); }
+.task-pick.is-on { border-color: var(--bd-amber); background: rgba(125,192,240,0.10); }
 .task-pick input { margin-top: 3px; accent-color: hsl(var(--amber)); width: 17px; height: 17px; flex: 0 0 auto; }
 .task-pick .t-label { font-weight: 600; }
 .task-pick .t-hint { color: var(--c-muted); font-size: 0.86rem; }
