@@ -40,6 +40,10 @@ const CONFIG = {
     // "Show me my number" button goes straight to it. Leave "" to use the built-in
     // Stripe Checkout function (/api/eb-checkout). Stripe product: prod_UmxDujUWUDZtrc.
     paymentLinkUrl: "https://buy.stripe.com/fZu9AUeph7ydbcc83Ac7u0o",
+    // TEST MODE: when true the tool is FREE and open so you can work through it
+    // end-to-end (payment skipped, nothing saved to leads). Flip to false to go
+    // LIVE — the "Show me my number" button then sends buyers to the link above.
+    testMode: true,
   },
 
   // ---- THE MATH (per task → annual $) --------------------------------

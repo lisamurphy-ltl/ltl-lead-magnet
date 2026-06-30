@@ -46,6 +46,7 @@
   function boot() {
     var y = document.getElementById("year"); if (y) y.textContent = new Date().getFullYear();
     var sg = document.getElementById("footerSignoff"); if (sg) sg.textContent = CFG.brand.signoff;
+    if (CFG.price && CFG.price.testMode) testBanner();
     var qs = new URLSearchParams(location.search);
     var sid = qs.get("session_id");
     var adminCode = qs.get("admin");
@@ -87,6 +88,7 @@
   }
 
   function startCheckout() {
+    if (CFG.price && CFG.price.testMode) { state.unlocked = true; state.preview = true; testBanner(); startFlow(); return; }  // TEST: open the tool free
     var link = CFG.price && CFG.price.paymentLinkUrl;
     if (link) { location.href = link; return; }   // Stripe Payment Link, if configured
     var btn = document.getElementById("buyBtn");
@@ -143,6 +145,7 @@
       .catch(function () { renderSales(); flash("Couldn't verify owner access."); });
   }
   function previewMaybe() {
+    if (CFG.price && CFG.price.testMode) { state.unlocked = true; state.preview = true; testBanner(); startFlow(); return; }  // TEST: open the tool free
     // Payment is live once a Stripe link is wired → close the public ?preview bypass.
     // (Owner/testing: use promo code OWNERTEST at checkout for a free $0 unlock.)
     if (CFG.price && CFG.price.paymentLinkUrl) { renderSales(); flash("Payment is live — buy, or use code OWNERTEST at checkout, to unlock."); return; }
@@ -721,6 +724,11 @@
   }
 
   /* ================= CAPTURE ================= */
+  function testBanner() {
+    if (document.getElementById("ltlTestBanner")) return;
+    var b = h("div", { id: "ltlTestBanner", style: "position:fixed;top:0;left:0;right:0;z-index:60;text-align:center;background:#7dc0f0;color:#0a1020;font:700 12px/1.5 Inter,sans-serif;padding:6px;letter-spacing:.03em" }, ["TEST MODE — payment is OFF. Work through the whole tool free; nothing is saved or charged."]);
+    document.body.appendChild(b); document.body.style.paddingTop = "28px";
+  }
   function previewBanner() {
     var b = h("div", { style: "position:fixed;top:0;left:0;right:0;z-index:60;text-align:center;background:rgba(255,138,61,0.92);color:#1a0d03;font:600 13px/1.4 Inter,sans-serif;padding:6px" }, ["PREVIEW MODE — no payment, no data saved. Add ?preview=1 to any URL to see this. Remove it for the real $97 flow."]);
     document.body.appendChild(b);
