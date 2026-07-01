@@ -43,7 +43,7 @@ const CONFIG = {
     // TEST MODE: when true the tool is FREE and open so you can work through it
     // end-to-end (payment skipped, nothing saved to leads). Flip to false to go
     // LIVE — the "Show me my number" button then sends buyers to the link above.
-    testMode: true,
+    testMode: false,
   },
 
   // ---- THE MATH (per task → annual $) --------------------------------
