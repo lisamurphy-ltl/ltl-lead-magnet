@@ -746,7 +746,7 @@
     ]));
     app.appendChild(h("section", { class: "card", style: "text-align:center" }, [
       h("h2", {}, ["That's your Briefing."]),
-      h("p", { class: "guide-line" }, ["We've emailed a copy to " + (state.email || "your inbox") + ". When you're ready to install all ten with me — live, in one day — that's the next step."]),
+      h("p", { class: "guide-line" }, ["Print or save your Briefing below to keep it. When you're ready to install all ten with me — live, in one day — that's the next step."]),
       h("div", { class: "btn-row" }, [
         h("button", { class: "btn", onclick: function () { window.print(); } }, ["Print / save my Briefing"]),
         h("a", { class: "btn btn--ghost", href: CFG.brand.labUrl }, ["See the Live Lab →"]),
