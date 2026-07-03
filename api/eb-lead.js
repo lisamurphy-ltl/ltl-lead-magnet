@@ -5,6 +5,9 @@
 const LAB_URL = process.env.LAB_URL || "https://hoursback.limitedtolimitless.com/TimeBriefSolution";
 const ADMIN_BCC = process.env.ADMIN_BCC || "admin@limitedtolimitless.com";
 const FROM = process.env.RESEND_FROM || "Lisa Murphy <lisa@limitedtolimitless.com>";
+// Accept either the standard name or the "Resend" name the key was saved under in
+// Vercel (a Sensitive var's name can't be edited in place). RESEND_API_KEY wins if both exist.
+const RESEND_KEY = process.env.RESEND_API_KEY || process.env.Resend;
 const GHL_TAGS = ["briefing-buyer", "icp-b-buyer"];
 
 function money(n) { return "$" + Number(n || 0).toLocaleString("en-US"); }
@@ -35,11 +38,11 @@ export default async function handler(req, res) {
   if (typeof d === "string") { try { d = JSON.parse(d); } catch (e) { d = {}; } }
   d = d || {};
 
-  if (process.env.RESEND_API_KEY && d.email) {
+  if (RESEND_KEY && d.email) {
     try {
       await fetch("https://api.resend.com/emails", {
         method: "POST",
-        headers: { "Authorization": "Bearer " + process.env.RESEND_API_KEY, "Content-Type": "application/json" },
+        headers: { "Authorization": "Bearer " + RESEND_KEY, "Content-Type": "application/json" },
         body: JSON.stringify({ from: FROM, to: [d.email], bcc: [ADMIN_BCC], subject: "Your Efficiency Briefing — " + money(d.leakTotalYr) + "/yr to recover", html: briefingHtml(d) }),
       });
     } catch (e) { /* non-fatal */ }
