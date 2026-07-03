@@ -383,7 +383,7 @@ Return: what created value, what wasted time, one operational leak, one decision
   // GHL. "Biggest leak + why" is mirrored to a sheet for Lisa's read.
   capture: {
     adminBcc: "admin@limitedtolimitless.com",
-    fromEmail: "Lisa Murphy <lisa@limitedtolimitless.com>",   // must be a Resend-verified sender
+    fromEmail: "Lisa Murphy <admin@limitedtolimitless.com>",   // must be a Resend-verified sender
     ghlTags: ["briefing-buyer", "icp-b-buyer"],
   },
 };
