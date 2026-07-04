@@ -181,6 +181,23 @@
         heads: d.isTeam ? 2 : 1,
       };
     });
+    // Custom "Other" time-sinks the visitor typed in the free tool — carry them across with their hours.
+    state.custom = state.custom || {};
+    var seenCustom = {};
+    (d.custom || []).forEach(function (c) {
+      if (!c) return;
+      var label = (c.label || "").trim(); if (!label || isStandardLabel(label)) return;
+      var key = normLabel(label); if (seenCustom[key]) return; seenCustom[key] = 1;
+      if (Object.keys(state.custom).length >= 3) return;
+      var id = (c.id && !state.custom[c.id]) ? c.id : ("custom_" + (Object.keys(state.custom).length + 1));
+      state.custom[id] = { label: label.slice(0, 60), recoverPct: 0.40, hint: "The work that keeps slipping" };
+      var ch = d.hours && d.hours[c.id];
+      state.picks[id] = {
+        ownerHours: ch && ch.value != null && ch.value !== "" ? Math.max(0, parseFloat(ch.value) || 2) : 2,
+        cadence: ch && ch.cadence ? ch.cadence : "week",
+        heads: d.isTeam ? 2 : 1,
+      };
+    });
     state.fromFree = true;
   }
   function startFlow() {
@@ -195,6 +212,9 @@
   function renderTransition() {
     var team = !!state.isTeam;
     var rows = CFG.tasks.map(function (t) { return captureRow(t); });
+    // Custom time-sinks carried from the free tool (or added here) show as their own rows.
+    var customRows = Object.keys(state.custom || {}).map(function (id) { var t = byId(id); return t ? captureRow(t) : null; }).filter(Boolean);
+    rows = rows.concat(customRows);
     var head = team
       ? h("div", {}, [
           h("h2", { class: "step-title" }, ["We've already got your numbers" + firstName() + ". Now — your team."]),
@@ -240,10 +260,16 @@
   }
 
   function addOther(txt) {
-    txt = (txt || "").trim(); if (!txt) return;
+    txt = (txt || "").trim(); if (!txt || isStandardLabel(txt)) return;
     state.custom = state.custom || {};
-    state.custom["custom_other"] = { label: txt.slice(0, 60), recoverPct: 0.40, hint: "The work that keeps slipping" };
-    state.picks["custom_other"] = { ownerHours: 2, cadence: "week", heads: 1 };
+    var ids = Object.keys(state.custom);
+    var n = normLabel(txt);
+    if (ids.some(function (id) { return normLabel(state.custom[id].label) === n; })) return; // already added
+    if (ids.length >= 3) { flash("You can add up to 3 extras — that's plenty to build first."); return; }
+    var id = "custom_" + (ids.length + 1);
+    while (state.custom[id]) { id = "custom_" + (parseInt(id.split("_")[1], 10) + 1); }
+    state.custom[id] = { label: txt.slice(0, 60), recoverPct: 0.40, hint: "The work that keeps slipping" };
+    state.picks[id] = { ownerHours: 2, cadence: "week", heads: state.isTeam ? 2 : 1 };
   }
 
   /* ================= STEP CHROME ================= */
@@ -796,6 +822,8 @@
     };
     return undefined;
   }
+  function normLabel(s) { return String(s == null ? "" : s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+  function isStandardLabel(label) { var n = normLabel(label); if (n.length < 3) return true; return CFG.tasks.some(function (t) { var tn = normLabel(t.label); return tn === n || tn.indexOf(n) >= 0 || n.indexOf(tn) >= 0; }); }
   function flash(msg) {
     var n = h("div", { class: "card error", style: "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;max-width:90%" }, [msg]);
     document.body.appendChild(n); setTimeout(function () { n.remove(); }, 4200);

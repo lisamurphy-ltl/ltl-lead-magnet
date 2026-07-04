@@ -12,6 +12,7 @@
   const state = loadState() || {
     selected: [],
     other: "",
+    custom: [],         // up to 3 user-typed time-sinks that aren't on the standard list
     believedLeak: "",
     hours: {},          // id -> {value, cadence}
     payRate: "",
@@ -22,6 +23,10 @@
     captured: false,
     ranPrompts: [],
   };
+  // backward-compat for state saved before custom tasks existed
+  if (!Array.isArray(state.custom)) state.custom = [];
+  if (!Array.isArray(state.selected)) state.selected = [];
+  if (!state.hours) state.hours = {};
   let step = 0;
 
   // ---------- helpers ----------
@@ -32,11 +37,50 @@
   function toast(msg) { $toast.textContent = msg; $toast.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => $toast.classList.remove("show"), 2200); }
   function weeklyHours(h) { if (!h) return 0; const v = parseFloat(h.value) || 0; return h.cadence === "day" ? v * 5 : v; }
 
+  // ---------- custom ("Other") time-sinks ----------
+  const norm = (s) => String(s == null ? "" : s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  // Is this typed label really one of the standard 10 (so we shouldn't double-count it)?
+  function matchesStandard(label) {
+    const n = norm(label); if (n.length < 3) return null;
+    return CONFIG.tasks.find((t) => { const tn = norm(t.label); return tn === n || tn.includes(n) || n.includes(tn); }) || null;
+  }
+  // The custom entries that count: non-empty, not a standard task, no duplicates.
+  function validCustom() {
+    const seen = {}; const out = [];
+    (state.custom || []).forEach((c) => {
+      if (!c) return;
+      const label = (c.label || "").trim();
+      if (!label || matchesStandard(label)) return;
+      const key = norm(label); if (!key || seen[key]) return;
+      seen[key] = 1; out.push(c);
+    });
+    return out;
+  }
+  const genericPrompt = (label) =>
+    `You are my operations assistant. I want to spend far less time on "${label}" without dropping the ball.\n\n` +
+    `First, ask me 3 quick questions to learn how I handle "${label}" today and what "done well" looks like for me.\n\n` +
+    `Then give me: (1) a simple step-by-step way to do it faster, (2) exactly which parts you can draft or handle for me, and (3) a reusable checklist or template I can save and reuse.\n\n` +
+    `Keep it concrete and specific to my answers — no fluff.`;
+  // Synthesize a full "task" object for a custom entry so it flows through the same math/UI as the standard 10.
+  const customTask = (c) => ({
+    id: c.id, label: (c.label || "").trim(), hint: "You flagged this one yourself",
+    recoverPct: 0.35, hoursDefault: 2, cadence: "week",
+    promptName: (c.label || "").trim(), savesNote: "", prompt: genericPrompt((c.label || "").trim()), custom: true,
+  });
+  function findTask(id) {
+    const t = CONFIG.tasks.find((x) => x.id === id);
+    if (t) return t;
+    const c = (state.custom || []).find((x) => x && x.id === id);
+    return c ? customTask(c) : null;
+  }
+  // Standard picks + valid custom entries — everything that gets hours and counts toward the leak.
+  const activeIds = () => state.selected.concat(validCustom().map((c) => c.id));
+
   // ---------- the math ----------
   function computeRows() {
     const rate = parseFloat(state.payRate) || 0;
-    const rows = state.selected.map((id) => {
-      const t = CONFIG.tasks.find((x) => x.id === id);
+    const rows = activeIds().map((id) => {
+      const t = findTask(id);
       const wk = weeklyHours(state.hours[id]);
       const recoveredWk = wk * t.recoverPct;
       const annual = recoveredWk * rate * 52;
@@ -137,10 +181,14 @@
             <span class="box"></span>
             <span class="c-main"><span class="c-label">${esc(t.label)}</span><span class="c-hint">${esc(t.hint)}</span></span>
           </button>`).join("")}
-        <label class="field" style="margin-top:4px">
-          <span class="lbl">Something else eating your time? <small>(optional — type it here)</small></span>
-          <input type="text" id="other" placeholder="e.g. payroll, bookkeeping…" value="${esc(state.other)}" />
-        </label>
+        <div class="field" style="margin-top:4px">
+          <span class="lbl">Something else eating your time? <small>(optional — add up to 3 that aren't listed above)</small></span>
+          ${[0, 1, 2].map((i) => {
+            const c = state.custom[i];
+            return `<input type="text" class="custom-in" data-idx="${i}" placeholder="${i === 0 ? "e.g. payroll, bookkeeping…" : "add another…"}" value="${c ? esc(c.label) : ""}" style="margin-top:${i === 0 ? 0 : 8}px" aria-label="another time-sink not on the list" />`;
+          }).join("")}
+          <p class="custom-note" id="customNote" style="color:var(--muted);font-size:13px;margin-top:6px;min-height:1px"></p>
+        </div>
       </div>
       <div class="btn-row">
         <button class="btn secondary back" id="back">Back</button>
@@ -153,13 +201,27 @@
         const i = state.selected.indexOf(id);
         if (i >= 0) state.selected.splice(i, 1); else state.selected.push(id);
         el.classList.toggle("sel");
-        document.getElementById("nextBtn").disabled = state.selected.length === 0;
+        document.getElementById("nextBtn").disabled = activeIds().length === 0;
         saveState();
       };
     });
-    document.getElementById("other").oninput = (e) => { state.other = e.target.value; saveState(); };
+    const noteEl = document.getElementById("customNote");
+    const refreshCustom = () => {
+      const dup = (state.custom || []).map((c) => c && c.label).find((l) => l && matchesStandard(l));
+      noteEl.textContent = dup ? `“${dup.trim()}” is already on the list above — we'll count it there, no need to add it.` : "";
+      document.getElementById("nextBtn").disabled = activeIds().length === 0;
+    };
+    document.querySelectorAll(".custom-in").forEach((inp) => {
+      inp.oninput = (e) => {
+        const idx = +e.target.dataset.idx;
+        if (!state.custom[idx]) state.custom[idx] = { id: "custom_" + (idx + 1), label: "" };
+        state.custom[idx].label = e.target.value;
+        saveState(); refreshCustom();
+      };
+    });
+    refreshCustom();
     document.getElementById("back").onclick = back;
-    document.getElementById("nextBtn").onclick = () => { if (state.selected.length) next(); };
+    document.getElementById("nextBtn").onclick = () => { if (activeIds().length) next(); };
   }
 
   // ===== 2. GUT READ (before any number) =====
@@ -184,8 +246,9 @@
 
   // ===== 3. HOURS PER TASK =====
   function hours() {
-    const rows = state.selected.map((id) => {
-      const t = CONFIG.tasks.find((x) => x.id === id);
+    const ids = activeIds();
+    const rows = ids.map((id) => {
+      const t = findTask(id);
       if (!state.hours[id]) state.hours[id] = { value: t.hoursDefault, cadence: t.cadence };
       const h = state.hours[id];
       return `
@@ -217,7 +280,7 @@
       const wk = weeklyHours(state.hours[id]);
       el.textContent = wk > 0 ? `≈ ${(+wk.toFixed(1))} hrs/week` : "";
     };
-    state.selected.forEach(updateWk);
+    ids.forEach(updateWk);
     document.querySelectorAll('.hr-hours').forEach((inp) => {
       inp.oninput = (e) => { state.hours[e.target.dataset.id].value = e.target.value; updateWk(e.target.dataset.id); saveState(); };
     });
@@ -370,7 +433,8 @@
       numberOneMove: top2[0] ? top2[0].task.label : null,
       top2: top2.map((r) => ({ task: r.task.label, annual: Math.round(r.annual) })),
       tasksSelected: state.selected,
-      otherTask: state.other || null,
+      customTasks: validCustom().map((c) => c.label),
+      otherTask: (validCustom()[0] && validCustom()[0].label) || state.other || null,
       tags: [CONFIG.capture.leadTag],
       capturedAt: new Date().toISOString(),
     };
@@ -449,7 +513,7 @@
     document.querySelectorAll(".copy-btn").forEach((b) => {
       b.onclick = async () => {
         const id = b.dataset.id;
-        const text = CONFIG.tasks.find((t) => t.id === id).prompt;
+        const text = findTask(id).prompt;
         try { await navigator.clipboard.writeText(text); }
         catch (e) {
           const pre = document.querySelector(`pre[data-prompt="${id}"]`);
@@ -541,7 +605,7 @@
   if (params.get("reveal") === "1" && state.selected.length) {
     state.captured = true; saveState();
     step = STEPS.indexOf("results");
-  } else if (state.selected.length && !state.captured) {
+  } else if (activeIds().length && !state.captured) {
     step = 1; // resume mid-flow
   }
   render();
