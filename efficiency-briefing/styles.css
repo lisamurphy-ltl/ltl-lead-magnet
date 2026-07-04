@@ -309,3 +309,10 @@ body.dash-mode { overflow: hidden; }
 body.dash-mode .site-header, body.dash-mode .site-footer { display: none; }
 body.dash-mode #app.wrap { max-width: none; padding: 0; }
 @media (max-width: 900px) { body.dash-mode { overflow: auto; } }
+
+/* Dashboard sliders locked by default — a stray touch (esp. mobile) must not change the real numbers */
+.sb-editbar { padding: 10px 0 4px; }
+.edit-btn { display: block; width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--c-border); background: var(--c-amber); color: hsl(var(--bg)); font: 700 0.9rem var(--font); cursor: pointer; }
+.edit-btn:active { transform: translateY(1px); }
+.lock-hint { font-size: 0.72rem; color: var(--c-muted); line-height: 1.4; margin: 7px 2px 0; }
+.shell-side.is-locked input[type="range"] { pointer-events: none; opacity: 0.4; cursor: default; }

@@ -521,11 +521,22 @@
       hsec.appendChild(ctrl);
     });
     sbBody.appendChild(hsec);
+    // Sliders are locked by default so a stray touch (especially on mobile, when
+    // scrolling) can't change the real numbers. "Edit" opts into what-if mode.
+    var editBtn = h("button", { class: "edit-btn", type: "button", onclick: function () { state.locked = !state.locked; applyLock(); } }, ["✎ Edit my numbers"]);
     var side = h("aside", { class: "shell-side" }, [
       h("div", { class: "sb-logo" }, [h("div", { class: "sb-mark" }, ["L"]), h("div", {}, [h("div", { class: "sb-name" }, ["EFFICIENCY"]), h("div", { class: "sb-sub" }, ["Time-Leak Simulator"])])]),
+      h("div", { class: "sb-editbar" }, [editBtn, h("p", { class: "lock-hint" }, ["Locked to the numbers you entered, so a stray tap can't change them. Tap Edit to explore what-ifs."])]),
       sbBody,
-      h("div", { class: "sb-foot" }, [h("button", { class: "reset-btn", onclick: function () { resetInputs(); } }, ["Reset to defaults"])]),
+      h("div", { class: "sb-foot" }, [h("button", { class: "reset-btn", type: "button", onclick: function () { resetInputs(); } }, ["Reset to defaults"])]),
     ]);
+    function applyLock() {
+      side.classList.toggle("is-locked", state.locked);
+      side.querySelectorAll('input[type="range"]').forEach(function (inp) { inp.disabled = state.locked; });
+      editBtn.textContent = state.locked ? "✎ Edit my numbers" : "✓ Done — lock numbers";
+    }
+    state.locked = true;
+    applyLock();
 
     /* ---------- MAIN ---------- */
     ui.sub = h("p", { class: "sub" }, [""]);
