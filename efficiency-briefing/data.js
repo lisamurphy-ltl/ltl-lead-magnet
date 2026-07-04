@@ -39,7 +39,9 @@ const CONFIG = {
     // Paste your Stripe Payment Link here (https://buy.stripe.com/...). When set, the
     // "Show me my number" button goes straight to it. Leave "" to use the built-in
     // Stripe Checkout function (/api/eb-checkout). Stripe product: prod_UmxDujUWUDZtrc.
-    paymentLinkUrl: "https://buy.stripe.com/fZu9AUeph7ydbcc83Ac7u0o",
+    paymentLinkUrl: "",   // Empty = use /api/eb-checkout (server-created session) so the
+                          // ?session_id={CHECKOUT_SESSION_ID} return URL reliably unlocks after paying.
+                          // (The Payment Link's redirect wasn't returning session_id → buyers bounced to sales.)
     // TEST MODE: when true the tool is FREE and open so you can work through it
     // end-to-end (payment skipped, nothing saved to leads). Flip to false to go
     // LIVE — the "Show me my number" button then sends buyers to the link above.

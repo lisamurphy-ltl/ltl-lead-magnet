@@ -14,8 +14,11 @@ export default async function handler(req, res) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const amount = parseInt(process.env.PRICE_AMOUNT_CENTS || "9700", 10);
     const base = baseUrl(req);
-    const lineItem = process.env.STRIPE_PRICE_ID
-      ? { price: process.env.STRIPE_PRICE_ID, quantity: 1 }
+    // Use the real live price (product prod_UmxDujUWUDZtrc) so the OWNERTEST promo
+    // code + product reporting apply correctly. Env var overrides if set.
+    const priceId = process.env.STRIPE_PRICE_ID || "price_1TnNJELeweUh8LMaPG3xu6qa";
+    const lineItem = priceId
+      ? { price: priceId, quantity: 1 }
       : { quantity: 1, price_data: { currency: "usd", unit_amount: amount, product_data: { name: "The Efficiency Briefing", description: "Your interactive operations diagnostic + your top 3 fixes, built for your own AI." } } };
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
