@@ -362,7 +362,7 @@ Return: what created value, what wasted time, one operational leak, one decision
     ],
     proof: "Jason went from 60+ to 45 hours a week — then doubled his monthly sales by day 90.",
     proofAttribution: "— Jason, insurance agency owner",
-    guide: "I've run a business that leaned on me for everything — and rebuilt it so it didn't have to. I'll walk you through doing the same with yours.",
+    guide: "I've run a business that leaned on me for everything — and rebuilt it to run for me, on autopilot. I'll walk you through doing the same with yours.",
     guideName: "— Lisa Murphy, MBA · Limited to Limitless",
     priceLine: "One flat $97. No subscription. Yours to keep.",
     cta: "Show me my number →",

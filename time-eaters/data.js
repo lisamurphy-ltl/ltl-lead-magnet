@@ -58,7 +58,7 @@ const CONFIG = {
       "The exact tasks quietly eating your week — ranked by what they cost you.",
       "Two prompts you can run today — real, usable output, not theory.",
     ],
-    guide: "I've run the kind of operation you're running — and rebuilt it so it runs without me.",
+    guide: "I rebuilt my business to run for me — on autopilot — instead of running me.",
     guideName: "— Lisa Murphy, MBA · Limited to Limitless",
     cta: "Show me where my hours go →",
   },
@@ -255,7 +255,7 @@ Return: what created value, what wasted time, one operational leak, one decision
 
   bridge: {
     line: "That was one. You're still holding the rest.",
-    sub: "You just plugged two leaks. The Efficiency Briefing maps all ten — across your whole team — and builds them into systems that run without you.",
+    sub: "You just plugged two leaks. The Efficiency Briefing maps all ten — across your whole team — and builds them into systems that run for you, on autopilot.",
     cta: "See the full picture — the $97 Efficiency Briefing →",
   },
 };
