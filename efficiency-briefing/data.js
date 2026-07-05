@@ -55,6 +55,12 @@ const CONFIG = {
   math: {
     weeksPerYear: 52,
     defaultBlendedRate: 35,     // $/hour — ONE firm-wide AVERAGE (his to change)
+    // Two recovery paths shown on the dashboard (research-verified, conservative):
+    // DIY with prompts ≈ 30% (AI-assist studies land 25–40%); done-with-you systems
+    // + automation ≈ 65–70% (process-automation studies land 60–95%).
+    diyRecover: 0.30,
+    doneRecoverLow: 0.65,
+    doneRecoverHigh: 0.70,
     // 10× defensibility ceiling: we never PRESENT a return above this
     // multiple of the $97 price. Keeps the number believable.
     maxReturnMultiple: 10,

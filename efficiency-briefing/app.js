@@ -545,10 +545,10 @@
       var big = h("div", { class: "kpi-big" }, ["$0"]), prog = h("i", {}, []);
       return { big: big, prog: prog, card: h("div", { class: "kpi " + cls }, [h("span", { class: "kpi-ico" }, [icon]), big, h("div", { class: "kpi-lbl" }, [lbl]), h("div", { class: "kpi-desc" }, [desc]), h("div", { class: "kpi-prog" }, [prog])]) };
     }
-    ui.k1 = kpi("is-danger", "🔴", "Annual leak", "Recoverable cost lost to manual work every year");
+    ui.k1 = kpi("is-green", "💚", "Recoverable / year", "What these hours are worth back to you every year");
     ui.k2 = kpi("is-danger", "⏱", "Hours back / year", "The hours strategic operations adjustments can hand back to you.");
     ui.k3 = kpi("is-accent", "📉", "Daily burn rate", "Bleeding every working day you wait");
-    ui.k4 = kpi("is-accent", "💸", "Return on $97", "What this Briefing pays back, yearly");
+    ui.k4 = kpi("is-accent", "💸", "Assumed return on $97", "Assumed yearly return on your $97 — done yourself with the prompts");
     body.appendChild(h("div", { class: "kpi-row" }, [ui.k1.card, ui.k2.card, ui.k3.card, ui.k4.card]));
     ui.secRow = h("div", { class: "kpi-row-2" }, []);
     body.appendChild(ui.secRow);
@@ -569,6 +569,27 @@
     ui.narrBody = h("div", { class: "narr-wrap" }, []);
     ui.paneNarr = h("div", { class: "tabpane hidden" }, [ui.narrBody]);
     body.appendChild(ui.paneBreak); body.appendChild(ui.paneNarr);
+
+    // ---------- closing: two green recovery paths ----------
+    ui.diyNum = h("div", { class: "path-num" }, ["$0"]);
+    ui.lisaNum = h("div", { class: "path-num" }, ["$0"]);
+    body.appendChild(h("section", { class: "paths" }, [
+      h("h2", { class: "paths-hd" }, ["Now turn the red green — two ways to win it back"]),
+      h("div", { class: "path-grid" }, [
+        h("div", { class: "path-card path--diy" }, [
+          h("div", { class: "path-tag" }, ["Do it yourself"]),
+          ui.diyNum,
+          h("div", { class: "path-sub" }, ["a year back — about " + Math.round(CFG.math.diyRecover * 100) + "% recovered, using the copy-paste prompts + pre-built AI projects in this Briefing."]),
+          h("div", { class: "path-meta" }, ["≈ 2–3 hours to set up yourself"]),
+        ]),
+        h("div", { class: "path-card path--lisa" }, [
+          h("div", { class: "path-tag" }, ["Get more help directly with Lisa Murphy"]),
+          ui.lisaNum,
+          h("div", { class: "path-sub" }, ["a year back — about " + Math.round(CFG.math.doneRecoverLow * 100) + "–" + Math.round(CFG.math.doneRecoverHigh * 100) + "% recovered, with Lisa building the systems + automations done-with-you."]),
+          h("a", { class: "path-cta", href: "https://calendar.app.google/mRMKxr6qv6DFxXxs5", target: "_blank", rel: "noopener" }, ["Have a 30-minute discussion with Lisa →"]),
+        ]),
+      ]),
+    ]));
 
     var main = h("main", { class: "shell-main" }, [
       h("header", { class: "main-head" }, [
@@ -605,12 +626,15 @@
       animateTo(ui.k1.big, R.totalAnnual, usd);
       animateTo(ui.k2.big, R.totalRecYr, function (v) { return fmtHours(v) + " hrs"; });
       animateTo(ui.k3.big, R.totalAnnual / 260, usd);
-      var roi = Math.min(R.totalAnnual / CFG.price.amount, CFG.math.maxReturnMultiple);
-      ui.k4.big._cur = R.totalAnnual; ui.k4.big.textContent = (roi >= CFG.math.maxReturnMultiple ? CFG.math.maxReturnMultiple + "×+" : Math.round(roi) + "×");
+      // Assumed return = what the $97 realistically pays back doing it yourself (DIY recovery / $97). Real, uncapped.
+      var roi = (R.totalAnnual * CFG.math.diyRecover) / CFG.price.amount;
+      ui.k4.big._cur = R.totalAnnual; ui.k4.big.textContent = Math.round(roi).toLocaleString("en-US") + "×";
       ui.k1.prog.style.width = Math.min(100, R.totalAnnual / 200000 * 100) + "%";
       ui.k2.prog.style.width = Math.min(100, R.totalRecYr / 5000 * 100) + "%";
       ui.k3.prog.style.width = Math.min(100, (R.totalAnnual / 260) / 2000 * 100) + "%";
-      ui.k4.prog.style.width = Math.min(100, roi / 10 * 100) + "%";
+      ui.k4.prog.style.width = "100%";
+      ui.diyNum.textContent = usd(R.totalAnnual * CFG.math.diyRecover);
+      ui.lisaNum.textContent = usd(R.totalAnnual * CFG.math.doneRecoverLow) + "–" + usd(R.totalAnnual * CFG.math.doneRecoverHigh);
       clear(ui.secRow);
       R.per.slice(0, 5).forEach(function (x, i) {
         ui.secRow.appendChild(h("div", { class: "kpi" }, [

@@ -316,3 +316,25 @@ body.dash-mode #app.wrap { max-width: none; padding: 0; }
 .edit-btn:active { transform: translateY(1px); }
 .lock-hint { font-size: 0.72rem; color: var(--c-muted); line-height: 1.4; margin: 7px 2px 0; }
 .shell-side.is-locked input[type="range"] { pointer-events: none; opacity: 0.4; cursor: default; }
+
+/* Green recovery: recoverable KPI + the two closing "turn the red green" cards */
+.kpi.is-green { border-color: rgba(46,224,129,0.5); background: rgba(46,224,129,0.10); }
+.kpi.is-green .kpi-big { color: #3ee081; }
+.kpi.is-green .kpi-prog i { background: #2ee081; }
+.paths { margin-top: 24px; }
+.paths-hd { font-size: 1.15rem; font-weight: 800; margin: 0 0 12px; }
+.path-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 700px) { .path-grid { grid-template-columns: 1fr; } }
+.path-card { border-radius: 14px; padding: 18px 18px 20px; border: 1px solid; }
+.path--diy { background: rgba(163, 217, 74, 0.12); border-color: rgba(163, 217, 74, 0.55); }
+.path--lisa { background: rgba(22, 163, 74, 0.18); border-color: #1db954; }
+.path-tag { font-size: 0.82rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; margin-bottom: 6px; }
+.path--diy .path-tag { color: #bfe86a; }
+.path--lisa .path-tag { color: #46d98a; }
+.path-num { font: 800 2rem/1.05 var(--font); }
+.path--diy .path-num { color: #d4ef7a; }
+.path--lisa .path-num { color: #4fe58f; }
+.path-sub { font-size: 0.9rem; color: var(--c-muted); margin-top: 5px; line-height: 1.5; }
+.path-meta { font-size: 0.8rem; color: var(--c-muted); margin-top: 12px; font-style: italic; }
+.path-cta { display: inline-block; margin-top: 16px; padding: 12px 18px; border-radius: 10px; background: #1db954; color: #04120a; font-weight: 800; text-decoration: none; }
+.path-cta:hover { background: #24cc63; }
