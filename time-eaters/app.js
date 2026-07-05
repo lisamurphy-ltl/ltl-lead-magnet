@@ -294,7 +294,7 @@
       <div class="card" style="margin-top:18px">
         <div class="meter">
           <div class="money" id="ticker">$0</div>
-          <div class="per">leaking out of your year</div>
+          <div class="per">leaking out of your revenues every year</div>
         </div>
         ${one ? `<div class="mathline">${esc(one.task.label)}: <b>${one.weeklyHours.toFixed(1)} hrs/wk</b> × <b>${Math.round(one.recoverPct * 100)}%</b> recoverable × <b>${money(one.rate)}</b>/hr × 52 = <b>${money(one.annual)}/yr</b></div>` : ""}
         <div class="tick">Built from your top 2 leaks — the math is shown, nothing hidden.</div>

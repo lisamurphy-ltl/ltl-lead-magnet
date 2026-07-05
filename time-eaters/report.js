@@ -112,7 +112,11 @@
 
       const safeName = (d.name || "Your").replace(/[^a-z0-9]+/gi, "-");
       const built = window.pdfMake.createPdf(dd);
+      // Mobile browsers block the blob "download" (shows "page can't be downloaded"),
+      // so open the PDF in a new tab where the phone's own save/share works.
+      const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Mobile/i.test(navigator.userAgent || "");
       if (d._preview) { built.getDataUrl((url) => d._preview(url)); }
+      else if (isMobile) { built.open(); }
       else { built.download(`${safeName}-Hour-Back-Report.pdf`); }
     },
   };

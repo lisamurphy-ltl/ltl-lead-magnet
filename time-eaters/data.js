@@ -58,8 +58,8 @@ const CONFIG = {
       "The exact tasks quietly eating your week — ranked by what they cost you.",
       "Two prompts you can run today — real, usable output, not theory.",
     ],
-    guide: "I rebuilt my business to run for me — on autopilot — instead of running me.",
-    guideName: "— Lisa Murphy, MBA · Limited to Limitless",
+    guide: "I just did a month's worth of work in less than an hour.",
+    guideName: "— Brad Coverdale",
     cta: "Show me where my hours go →",
   },
 
