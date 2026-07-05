@@ -225,10 +225,10 @@
     var headsInput = h("input", { type: "number", min: "1", step: "1", value: p.heads, style: "max-width:62px" });
     hoursInput.addEventListener("input", function (e) { p.ownerHours = Math.max(0, parseFloat(e.target.value || "0")); });
     headsInput.addEventListener("input", function (e) { p.heads = Math.max(1, parseInt(e.target.value || "1", 10)); });
-    var detail = h("div", { style: "display:" + (on ? "flex" : "none") + ";flex-wrap:wrap;gap:10px 20px;align-items:center;margin-top:10px;padding-left:29px" }, [
-      h("div", { class: "hours-controls" }, [h("span", { class: "h-sub" }, ["Avg hours"]), hoursInput, cad]),
-      h("div", { class: "hours-controls" }, [h("span", { class: "h-sub" }, ["How many people? ×"]), headsInput]),
-    ]);
+    var detailKids = [h("div", { class: "hours-controls" }, [h("span", { class: "h-sub" }, ["Avg hours"]), hoursInput, cad])];
+    // "How many people?" only makes sense for a team — a solo operator is always 1.
+    if (state.isTeam) detailKids.push(h("div", { class: "hours-controls" }, [h("span", { class: "h-sub" }, ["How many people? ×"]), headsInput]));
+    var detail = h("div", { style: "display:" + (on ? "flex" : "none") + ";flex-wrap:wrap;gap:10px 20px;align-items:center;margin-top:10px;padding-left:29px" }, detailKids);
     var row = h("div", { class: "task-pick" + (on ? " is-on" : ""), style: "display:block" }, []);
     var label = h("label", { style: "display:flex;align-items:flex-start;gap:11px;cursor:pointer" }, [chk, h("span", {}, [h("span", { class: "t-label" }, [t.label]), h("br"), h("span", { class: "t-hint" }, [t.hint])])]);
     chk.addEventListener("change", function (e) {
@@ -545,7 +545,7 @@
       var big = h("div", { class: "kpi-big" }, ["$0"]), prog = h("i", {}, []);
       return { big: big, prog: prog, card: h("div", { class: "kpi " + cls }, [h("span", { class: "kpi-ico" }, [icon]), big, h("div", { class: "kpi-lbl" }, [lbl]), h("div", { class: "kpi-desc" }, [desc]), h("div", { class: "kpi-prog" }, [prog])]) };
     }
-    ui.k1 = kpi("is-green", "💚", "Recoverable / year", "What these hours are worth back to you every year");
+    ui.k1 = kpi("is-danger", "🔴", "Lost / year", "What these manual-work hours cost you, every year");
     ui.k2 = kpi("is-danger", "⏱", "Hours back / year", "The hours strategic operations adjustments can hand back to you.");
     ui.k3 = kpi("is-accent", "📉", "Daily burn rate", "Bleeding every working day you wait");
     ui.k4 = kpi("is-accent", "💸", "Assumed return on $97", "Assumed yearly return on your $97 — done yourself with the prompts");
@@ -586,7 +586,7 @@
           h("div", { class: "path-tag" }, ["Get more help directly with Lisa Murphy"]),
           ui.lisaNum,
           h("div", { class: "path-sub" }, ["a year back — about " + Math.round(CFG.math.doneRecoverLow * 100) + "–" + Math.round(CFG.math.doneRecoverHigh * 100) + "% recovered, with Lisa building the systems + automations done-with-you."]),
-          h("a", { class: "path-cta", href: "https://calendar.app.google/mRMKxr6qv6DFxXxs5", target: "_blank", rel: "noopener" }, ["Have a 30-minute discussion with Lisa →"]),
+          h("a", { class: "path-cta", href: "https://plan-2-profit.limitedtolimitless.com/widget/booking/YZL7j0L538A4eVl2Cjcy", target: "_blank", rel: "noopener" }, ["Have a 30-minute discussion with Lisa →"]),
         ]),
       ]),
     ]));
