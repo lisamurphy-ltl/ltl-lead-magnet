@@ -353,6 +353,10 @@ body.dash-mode #app.wrap { max-width: none; padding: 0; }
   .shell-main { padding: 0 !important; }
   .tabpane.hidden { display: block !important; }
   .kpi, .chart-card, .cat-card, .path-card, .sum, .cta-block, .brief-hd, .narr-para { background: #fff !important; border-color: #d5dae2 !important; box-shadow: none !important; }
-  h1, h2, h3, p, td, th, .kpi-lbl, .kpi-desc, .cat-name, .cat-hrs, .cat-desc, .sb-name, .sb-sub, .ch-sub, .path-sub, .path-meta, .path-tag { color: #1a1f27 !important; }
-  .ax { fill: #555 !important; } .ax-y { opacity: 1 !important; } .grid-line { stroke: #dde2e8 !important; }
+  h1, h2, h3, p, td, th, .kpi-lbl, .kpi-desc, .cat-name, .cat-hrs, .cat-desc, .sb-name, .sb-sub, .ch-sub, .path-sub, .path-meta, .path-tag, .shell, .main-body, .narr-wrap { color: #1a1f27 !important; }
+  /* big colored figures -> dark ink for strong contrast on white paper */
+  .kpi-big, .cat-big, .kpi-sub-num, .path-num, .sum-num, .cat-pct, .cta-num { color: #14181f !important; }
+  .kpi.is-danger .kpi-big { color: #b3241f !important; }
+  .path--diy, .path--lisa, .kpi.is-green { background: #fff !important; }
+  .ax { fill: #333 !important; } .ax-y { opacity: 1 !important; } .grid-line { stroke: #d9dee6 !important; }
 }
