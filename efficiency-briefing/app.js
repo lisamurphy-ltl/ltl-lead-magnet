@@ -448,6 +448,8 @@
   function heat(i) { return ["#ef4444", "#ff8a3d", "#ffb37d", "#7dc0f0", "#34a8c0", "#8b95a7"][Math.min(i, 5)]; }
   function escText(s) { return String(s == null ? "" : s).replace(/[<>&"]/g, function (c) { return ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]; }); }
   function usdK(n) { n = Math.round(n); var a = Math.abs(n); if (a >= 1000) { var k = n / 1000; var d = a < 10000 ? 1 : 0; return "$" + (Math.round(k * Math.pow(10, d)) / Math.pow(10, d)) + "K"; } return "$" + n.toLocaleString("en-US"); }
+  // round an axis maximum up to a clean 1/2/5 x 10^n so gridline labels read nicely
+  function niceCeil(v) { if (v <= 0) return 1; var mag = Math.pow(10, Math.floor(Math.log(v) / Math.LN10)); var norm = v / mag; var nice = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10; return nice * mag; }
   function animateTo(el, to, fmt) {
     var from = (el._cur == null ? to : el._cur); el._cur = to;
     if (Math.abs(to - from) < 1) { el.textContent = fmt(to); return; }
@@ -472,31 +474,40 @@
     ]);
   }
   function buildBars(per) {
-    var items = per.slice(0, 6), W = 320, H = 200, L = 8, R = 8, T = 24, B = 30, cw = W - L - R, ch = H - T - B;
-    var max = items.length ? items[0].annual : 1, n = items.length, slot = cw / Math.max(1, n), bw = Math.min(46, slot * 0.6);
-    var grid = "";
-    for (var g = 1; g <= 3; g++) { var gy = T + ch * (g / 3); grid += '<line class="grid-line" x1="' + L + '" y1="' + gy.toFixed(1) + '" x2="' + (W - R) + '" y2="' + gy.toFixed(1) + '"/>'; }
+    var items = per.slice(0, 6), W = 340, H = 214, L = 46, R = 12, T = 22, B = 34, cw = W - L - R, ch = H - T - B;
+    var max = items.length ? items[0].annual : 1, niceMax = niceCeil(max);
+    var n = items.length, slot = cw / Math.max(1, n), bw = Math.min(38, slot * 0.5);
+    var grid = "", gL = 4;
+    for (var g = 0; g <= gL; g++) {
+      var frac = g / gL, gy = T + ch * (1 - frac);
+      grid += '<line class="grid-line" x1="' + L + '" y1="' + gy.toFixed(1) + '" x2="' + (W - R) + '" y2="' + gy.toFixed(1) + '"/>';
+      grid += '<text class="ax ax-y" x="' + (L - 8) + '" y="' + (gy + 3.5).toFixed(1) + '" text-anchor="end">' + usdK(niceMax * frac) + '</text>';
+    }
     var bars = items.map(function (x, i) {
-      var bh = max ? (x.annual / max) * ch : 0, cx = L + slot * i + slot / 2, y = T + (ch - bh), col = heat(i);
-      return '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(1, bh).toFixed(1) + '" rx="3" fill="' + col + '"/>' +
+      var bh = niceMax ? (x.annual / niceMax) * ch : 0, cx = L + slot * i + slot / 2, y = T + (ch - bh), col = heat(i);
+      return '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(2, bh).toFixed(1) + '" rx="4" fill="' + col + '"/>' +
         '<text class="ax" x="' + cx.toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" text-anchor="middle" fill="' + col + '" style="font-weight:700">' + usdK(x.annual) + '</text>' +
         '<text class="ax" x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle">' + escText(x.short) + '</text>';
     }).join("");
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' + grid + bars + "</svg>";
   }
   function buildArea(total) {
-    var W = 320, H = 200, L = 42, R = 10, T = 12, B = 26, cw = W - L - R, ch = H - T - B, pts = [];
-    for (var m = 0; m <= 12; m++) { pts.push([L + (m / 12) * cw, T + ch - (m / 12) * ch]); }
+    var W = 340, H = 214, L = 48, R = 12, T = 16, B = 30, cw = W - L - R, ch = H - T - B;
+    var niceMax = niceCeil(total), N = 60, pts = [];
+    for (var m = 0; m <= N; m++) { var t = m / N, ev = t * t * (3 - 2 * t); pts.push([L + t * cw, T + ch - ev * (total / niceMax) * ch]); }
     var line = "M" + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" L");
-    var area = line + " L" + (L + cw) + "," + (T + ch) + " L" + L + "," + (T + ch) + " Z", grid = "";
-    for (var g = 0; g <= 2; g++) { var gy = T + ch * (g / 2); grid += '<line class="grid-line" x1="' + L + '" y1="' + gy.toFixed(1) + '" x2="' + (W - R) + '" y2="' + gy.toFixed(1) + '"/>'; }
+    var area = line + " L" + (L + cw).toFixed(1) + "," + (T + ch).toFixed(1) + " L" + L + "," + (T + ch).toFixed(1) + " Z";
+    var grid = "", gL = 4;
+    for (var g = 0; g <= gL; g++) {
+      var frac = g / gL, gy = T + ch * (1 - frac);
+      grid += '<line class="grid-line" x1="' + L + '" y1="' + gy.toFixed(1) + '" x2="' + (W - R) + '" y2="' + gy.toFixed(1) + '"/>';
+      grid += '<text class="ax ax-y" x="' + (L - 8) + '" y="' + (gy + 3.5).toFixed(1) + '" text-anchor="end">' + usdK(niceMax * frac) + '</text>';
+    }
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' +
-      '<defs><linearGradient id="leakGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef4444" stop-opacity="0.4"/><stop offset="1" stop-color="#ef4444" stop-opacity="0.04"/></linearGradient></defs>' + grid +
-      '<path d="' + area + '" fill="url(#leakGrad)"/><path d="' + line + '" fill="none" stroke="#ef4444" stroke-width="2.5"/>' +
-      '<text class="ax" x="' + (L - 5) + '" y="' + (T + 4) + '" text-anchor="end">' + usdK(total) + '</text>' +
-      '<text class="ax" x="' + (L - 5) + '" y="' + (T + ch + 2) + '" text-anchor="end">$0</text>' +
-      '<text class="ax" x="' + L + '" y="' + (H - 8) + '">now</text>' +
-      '<text class="ax" x="' + (L + cw) + '" y="' + (H - 8) + '" text-anchor="end">12 mo</text></svg>';
+      '<defs><linearGradient id="leakGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef4444" stop-opacity="0.42"/><stop offset="1" stop-color="#ef4444" stop-opacity="0.03"/></linearGradient></defs>' + grid +
+      '<path d="' + area + '" fill="url(#leakGrad)"/><path d="' + line + '" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linejoin="round"/>' +
+      '<text class="ax" x="' + L + '" y="' + (H - 9) + '">now</text>' +
+      '<text class="ax" x="' + (L + cw) + '" y="' + (H - 9) + '" text-anchor="end">12 mo</text></svg>';
   }
 
   function renderReveal() {
@@ -525,7 +536,7 @@
     // scrolling) can't change the real numbers. "Edit" opts into what-if mode.
     var editBtn = h("button", { class: "edit-btn", type: "button", onclick: function () { state.locked = !state.locked; applyLock(); } }, ["✎ Edit my numbers"]);
     var side = h("aside", { class: "shell-side" }, [
-      h("div", { class: "sb-logo" }, [h("div", { class: "sb-mark" }, ["L"]), h("div", {}, [h("div", { class: "sb-name" }, ["EFFICIENCY"]), h("div", { class: "sb-sub" }, ["Time-Leak Simulator"])])]),
+      h("div", { class: "sb-logo" }, [h("div", { class: "sb-mark" }, [state.name ? state.name.trim().charAt(0).toUpperCase() : "L"]), h("div", {}, [h("div", { class: "sb-name" }, [state.name ? state.name.trim().split(/\s+/)[0] + "'s Briefing" : "Efficiency Briefing"]), h("div", { class: "sb-sub" }, ["Live Time-Leak model"])])]),
       h("div", { class: "sb-editbar" }, [editBtn, h("p", { class: "lock-hint" }, ["Locked to the numbers you entered, so a stray tap can't change them. Tap Edit to explore what-ifs."])]),
       sbBody,
       h("div", { class: "sb-foot" }, [h("button", { class: "reset-btn", type: "button", onclick: function () { resetInputs(); } }, ["Reset to defaults"])]),
@@ -594,7 +605,10 @@
     var main = h("main", { class: "shell-main" }, [
       h("header", { class: "main-head" }, [
         h("div", {}, [h("h1", {}, ["Efficiency Briefing"]), ui.sub]),
-        h("span", { class: "pill leak-pulse" }, [h("span", { class: "dot" }), "Live leak active"]),
+        h("div", { class: "head-actions" }, [
+          h("span", { class: "pill leak-pulse" }, [h("span", { class: "dot" }), "Live leak active"]),
+          h("button", { class: "print-btn", type: "button", onclick: function () { window.print(); } }, ["🖨 Print / Save PDF"]),
+        ]),
       ]),
       body,
     ]);
