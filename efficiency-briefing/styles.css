@@ -360,3 +360,29 @@ body.dash-mode #app.wrap { max-width: none; padding: 0; }
   .path--diy, .path--lisa, .kpi.is-green { background: #fff !important; }
   .ax { fill: #333 !important; } .ax-y { opacity: 1 !important; } .grid-line { stroke: #d9dee6 !important; }
 }
+
+/* Executive build portfolio */
+.pf-cover { text-align: center; }
+.pf-eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-amber); font-weight: 700; }
+.pf-title { font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 800; margin: 8px 0 10px; }
+.pf-lede { color: var(--c-muted); max-width: 62ch; margin: 0 auto; line-height: 1.6; }
+.pf-toolbar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+.pf-move { margin-top: 16px; }
+.pf-move-hd { display: flex; align-items: flex-start; gap: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--c-border); margin-bottom: 6px; }
+.pf-num { flex: none; width: 34px; height: 34px; border-radius: 9px; background: var(--c-amber); color: hsl(var(--bg)); font: 800 1.05rem/34px var(--font); text-align: center; }
+.pf-move-title { flex: 1; min-width: 0; }
+.pf-move-title h3 { margin: 0; font-size: 1.15rem; }
+.pf-why { color: var(--c-muted); font-size: 0.85rem; margin: 3px 0 0; line-height: 1.45; }
+.pf-worth { flex: none; color: #ef8a4d; font-weight: 800; font-size: 0.95rem; white-space: nowrap; }
+.pf-sec { font-size: 0.9rem; font-weight: 700; letter-spacing: 0.02em; color: #cfe0f2; margin: 16px 0 8px; }
+
+@media print {
+  body.portfolio-mode { background: #fff !important; }
+  body.portfolio-mode .bg-glows, body.portfolio-mode .platform-tabs, body.portfolio-mode .print-btn, body.portfolio-mode .copy-btn, body.portfolio-mode .btn-row, body.portfolio-mode .site-header, body.portfolio-mode .site-footer, body.portfolio-mode .edit-note { display: none !important; }
+  body.portfolio-mode .card, body.portfolio-mode .starter-box { background: #fff !important; border-color: #d5dae2 !important; box-shadow: none !important; }
+  body.portfolio-mode, body.portfolio-mode h1, body.portfolio-mode h2, body.portfolio-mode h3, body.portfolio-mode h4, body.portfolio-mode p, body.portfolio-mode li, body.portfolio-mode pre { color: #1a1f27 !important; }
+  body.portfolio-mode .pf-eyebrow, body.portfolio-mode .pf-worth { color: #b3241f !important; }
+  body.portfolio-mode .pf-num { background: #1a1f27 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.portfolio-mode pre { background: #f4f6f9 !important; border: 1px solid #e0e4ea !important; }
+  body.portfolio-mode .pf-move { break-inside: avoid; }
+}

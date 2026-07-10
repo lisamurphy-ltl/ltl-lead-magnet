@@ -321,6 +321,22 @@ Return: what created value, what wasted time, one operational leak, one decision
 
   // ---- THE AI PLATFORMS (the build walkthrough adapts per platform) --
   // Alphabetical, no preference — any "projects" AI works.
+  // Universal guidance shown on every portfolio move (team rollout + threading).
+  buildGuide: {
+    teamSteps: [
+      "Name one owner for this project — the person who keeps its instructions sharp.",
+      "Share it: on a Team/Business plan, add your people to the project so everyone runs the same one. Solo plan? Send them the Instructions + Context to rebuild it in minutes.",
+      "Make it the standard — this task now always runs through this project, so the output is consistent no matter who does it.",
+      "Tune it monthly: paste in one great result and one weak one, and ask the AI to tighten the Instructions.",
+    ],
+    threadSteps: [
+      "Treat the project as home base — it holds the Instructions and Context so you never re-explain.",
+      "Start a fresh chat inside the project for each job — one thread per inbox clear-out, per meeting, per week.",
+      "Name each thread by date or subject so you can find and reuse it later.",
+      "When a thread gets long or wanders, start a new one — your project setup is always right there.",
+    ],
+  },
+
   platforms: [
     {
       id: "chatgpt", name: "ChatGPT Projects",

@@ -723,19 +723,22 @@
 
   function renderBuild() {
     clear(app); appMode(false);
+    document.body.classList.add("portfolio-mode");
     var tabs = h("div", { class: "platform-tabs" }, CFG.platforms.map(function (pf) {
       return h("button", { class: pf.id === state.platform ? "on" : "", onclick: function () { state.platform = pf.id; renderBuild(); } }, [pf.name]);
     }));
-    var intro = h("section", { class: "card" }, [
-      h("h2", { class: "step-title" }, ["Now build the three — into your own AI."]),
-      h("p", { class: "step-help" }, ["Pick where you work below. For each fix you get a copy-paste starter and dead-simple steps to turn it into a reusable project. Edit anything — these are starting points, not gospel."]),
-      tabs,
+    var cover = h("section", { class: "card pf-cover" }, [
+      h("div", { class: "pf-eyebrow" }, ["Efficiency Portfolio · Limited to Limitless"]),
+      h("h1", { class: "pf-title" }, [(state.name ? state.name.trim().split(/\s+/)[0] + "'s " : "Your ") + "AI Build Portfolio"]),
+      h("p", { class: "pf-lede" }, ["Every leak you named, turned into a reusable AI project you build once and your team runs forever. Pick your platform, then work down the list — start with #1. For each one: the prompt, how to build the project, how to roll it out to your team, and how to thread it."]),
+      h("div", { class: "pf-toolbar" }, [tabs, h("button", { class: "print-btn", type: "button", onclick: function () { window.print(); } }, ["🖨 Print / Save PDF"])]),
     ]);
-    app.appendChild(intro);
+    app.appendChild(cover);
     app.appendChild(h("section", { id: "buildArea" }, []));
     renderBuildArea();
     app.appendChild(h("section", { class: "card", style: "text-align:center" }, [
-      h("div", { class: "btn-row" }, [h("button", { class: "btn", onclick: renderSchedule }, ["Set my schedule →"])]),
+      h("p", { class: "step-help" }, ["That's your portfolio — build #1 this week, then work down the list."]),
+      h("div", { class: "btn-row" }, [h("button", { class: "btn btn--ghost", onclick: function () { document.body.classList.remove("portfolio-mode"); renderReveal(); } }, ["← Back to my dashboard"])]),
     ]));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -743,23 +746,33 @@
   // top-level so fetchBuilds() can refresh it when the AI brain responds
   function renderBuildArea() {
     var host = document.getElementById("buildArea"); if (!host) return; clear(host);
-    var top3 = state.results.per.slice(0, 3);
-    var pf = CFG.platforms.filter(function (p) { return p.id === state.platform; })[0];
-    top3.forEach(function (x, i) {
-      var t = byId(x.id);
+    var moves = (state.results && state.results.per) ? state.results.per : [];
+    var pf = CFG.platforms.filter(function (p) { return p.id === state.platform; })[0] || CFG.platforms[0];
+    var g = CFG.buildGuide || {};
+    moves.forEach(function (x, i) {
+      var t = byId(x.id); if (!t) return;
       var ai = state.aiBuilds && state.aiBuilds[x.id];
       var starter = ai && ai.starter ? ai.starter : null;
       var steps = (ai && ai.steps) ? ai.steps : pf.steps;
-      var instructions = starter ? starter.instructions : t.project.instructions;
-      var context = starter ? starter.context : t.project.context;
-      var sample = starter ? starter.sample : t.project.sample;
-      host.appendChild(h("section", { class: "card build-block" }, [
-        h("h3", {}, ["#" + (i + 1) + " · " + t.label, ai ? h("span", { class: "tag-ai" }, ["personalised"]) : null]),
-        h("p", { class: "step-help" }, ["Build this as a " + pf.name + " project. Steps:"]),
-        h("ol", { class: "steps" }, steps.map(function (st) { return h("li", {}, [st]); })),
-        starterBox("Instructions (paste into the project)", instructions),
+      var instructions = (starter && starter.instructions) || t.project.instructions || "";
+      var context = (starter && starter.context) || t.project.context || "";
+      var sample = (starter && starter.sample) || t.project.sample || "";
+      host.appendChild(h("section", { class: "card build-block pf-move" }, [
+        h("div", { class: "pf-move-hd" }, [
+          h("span", { class: "pf-num" }, [String(i + 1)]),
+          h("div", { class: "pf-move-title" }, [h("h3", {}, [t.label, ai ? h("span", { class: "tag-ai" }, ["personalised"]) : null]), h("p", { class: "pf-why" }, [t.benchmark || t.hint || ""])]),
+          h("span", { class: "pf-worth" }, [usdK(x.annual) + "/yr"]),
+        ]),
+        h("h4", { class: "pf-sec" }, ["1 · The prompt"]),
+        starterBox("Instructions — the project's brain", instructions),
         starterBox("Context to add", context),
         starterBox("Sample to include", sample),
+        h("h4", { class: "pf-sec" }, ["2 · Create the project in " + pf.name]),
+        h("ol", { class: "steps" }, steps.map(function (st) { return h("li", {}, [st]); })),
+        h("h4", { class: "pf-sec" }, ["3 · Build it into your team"]),
+        h("ol", { class: "steps" }, (g.teamSteps || []).map(function (st) { return h("li", {}, [st]); })),
+        h("h4", { class: "pf-sec" }, ["4 · Thread it out"]),
+        h("ol", { class: "steps" }, (g.threadSteps || []).map(function (st) { return h("li", {}, [st]); })),
         h("p", { class: "edit-note" }, ["✏️ Tailor the bracketed bits to your business before you save."]),
       ]));
     });
