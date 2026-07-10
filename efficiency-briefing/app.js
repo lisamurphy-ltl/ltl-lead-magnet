@@ -738,7 +738,10 @@
     renderBuildArea();
     app.appendChild(h("section", { class: "card", style: "text-align:center" }, [
       h("p", { class: "step-help" }, ["That's your portfolio — build #1 this week, then work down the list."]),
-      h("div", { class: "btn-row" }, [h("button", { class: "btn btn--ghost", onclick: function () { document.body.classList.remove("portfolio-mode"); renderReveal(); } }, ["← Back to my dashboard"])]),
+      h("div", { class: "btn-row" }, [
+        h("button", { class: "btn btn--ghost", onclick: function () { document.body.classList.remove("portfolio-mode"); renderReveal(); } }, ["← Back to my dashboard"]),
+        h("button", { class: "btn", onclick: function () { document.body.classList.remove("portfolio-mode"); renderSchedule(); } }, ["Set my schedule →"]),
+      ]),
     ]));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
