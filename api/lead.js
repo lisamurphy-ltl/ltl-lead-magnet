@@ -18,6 +18,10 @@
    ===================================================================== */
 
 const ADMIN_BCC = process.env.ADMIN_BCC || "admin@limitedtolimitless.com";
+// Accept either the standard name or the "Resend" name the key was saved under in
+// Vercel (a Sensitive var's name can't be edited in place). RESEND_API_KEY wins if both exist.
+const RESEND_KEY = process.env.RESEND_API_KEY || process.env.Resend;
+const RESEND_FROM = process.env.RESEND_FROM || "Lisa Murphy <admin@limitedtolimitless.com>";
 
 export default async function handler(req, res) {
   // CORS (safe for a public lead form)
@@ -53,16 +57,16 @@ export default async function handler(req, res) {
   // 2) Resend transactional email (lead + BCC admin) ----------------
   // Only fire on a real opt-in (has email + not the ran-prompt event).
   const isOptin = body.email && body.event !== "ran-prompt";
-  if (isOptin && process.env.RESEND_API_KEY) {
+  if (isOptin && RESEND_KEY) {
     try {
       const r = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-          "Authorization": "Bearer " + process.env.RESEND_API_KEY,
+          "Authorization": "Bearer " + RESEND_KEY,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM || "Limited to Limitless <onboarding@resend.dev>",
+          from: RESEND_FROM,
           to: [body.email],
           bcc: [ADMIN_BCC],
           subject: "Your Efficiency read — where your hours go",
@@ -72,7 +76,7 @@ export default async function handler(req, res) {
       results.email = r.ok ? "sent" : `error ${r.status}`;
     } catch (e) { results.email = "error " + e.message; }
   } else if (isOptin) {
-    results.email = "skipped (set RESEND_API_KEY)";
+    results.email = "skipped (set RESEND_API_KEY or Resend)";
   }
 
   // 3) Notion — log the full tool result to your own database ---------
