@@ -73,7 +73,7 @@ export default async function handler(req, res) {
           html: resultEmail(body),
         }),
       });
-      results.email = r.ok ? "sent" : `error ${r.status}: ${(await r.text()).slice(0, 300)}`;
+      results.email = r.ok ? "sent" : `error ${r.status}`;
     } catch (e) { results.email = "error " + e.message; }
   } else if (isOptin) {
     results.email = "skipped (set RESEND_API_KEY or Resend)";
