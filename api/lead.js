@@ -21,7 +21,10 @@ const ADMIN_BCC = process.env.ADMIN_BCC || "admin@limitedtolimitless.com";
 // Accept either the standard name or the "Resend" name the key was saved under in
 // Vercel (a Sensitive var's name can't be edited in place). RESEND_API_KEY wins if both exist.
 const RESEND_KEY = process.env.RESEND_API_KEY || process.env.Resend;
-const RESEND_FROM = process.env.RESEND_FROM || "Lisa Murphy <admin@limitedtolimitless.com>";
+// Must send from a Resend-VERIFIED domain. Only updates.limitedtolimitless.com is
+// verified, so send from there; replies + the BCC copy still go to the real admin@ inbox.
+const RESEND_FROM = process.env.RESEND_FROM || "Lisa Murphy <hello@updates.limitedtolimitless.com>";
+const RESEND_REPLY_TO = process.env.RESEND_REPLY_TO || "admin@limitedtolimitless.com";
 
 export default async function handler(req, res) {
   // CORS (safe for a public lead form)
@@ -67,6 +70,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           from: RESEND_FROM,
+          reply_to: RESEND_REPLY_TO,
           to: [body.email],
           bcc: [ADMIN_BCC],
           subject: "Your Efficiency read — where your hours go",

@@ -4,7 +4,10 @@
 // Always returns 200 so the tool never breaks if a key is missing.
 const LAB_URL = process.env.LAB_URL || "https://hoursback.limitedtolimitless.com/TimeBriefSolution";
 const ADMIN_BCC = process.env.ADMIN_BCC || "admin@limitedtolimitless.com";
-const FROM = process.env.RESEND_FROM || "Lisa Murphy <admin@limitedtolimitless.com>";
+// Must send from a Resend-VERIFIED domain (only updates.limitedtolimitless.com is);
+// replies + BCC still land in the real admin@ inbox.
+const FROM = process.env.RESEND_FROM || "Lisa Murphy <hello@updates.limitedtolimitless.com>";
+const REPLY_TO = process.env.RESEND_REPLY_TO || "admin@limitedtolimitless.com";
 // Accept either the standard name or the "Resend" name the key was saved under in
 // Vercel (a Sensitive var's name can't be edited in place). RESEND_API_KEY wins if both exist.
 const RESEND_KEY = process.env.RESEND_API_KEY || process.env.Resend;
@@ -43,7 +46,7 @@ export default async function handler(req, res) {
       await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Authorization": "Bearer " + RESEND_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ from: FROM, to: [d.email], bcc: [ADMIN_BCC], subject: "Your Efficiency Briefing — " + money(d.leakTotalYr) + "/yr to recover", html: briefingHtml(d) }),
+        body: JSON.stringify({ from: FROM, reply_to: REPLY_TO, to: [d.email], bcc: [ADMIN_BCC], subject: "Your Efficiency Briefing — " + money(d.leakTotalYr) + "/yr to recover", html: briefingHtml(d) }),
       });
     } catch (e) { /* non-fatal */ }
   }
