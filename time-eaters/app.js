@@ -89,7 +89,7 @@
           <input type="text" id="heroName" placeholder="First, what's your first name?" value="${esc(state.name)}" aria-label="Your first name" autocomplete="given-name" />
           <button class="btn" id="goHero" type="button" ${state.name.trim() ? "" : "disabled"}>${esc(c.cta)}</button>
         </div>
-        <p class="privacy">🔒 No signup to start · about 2 minutes</p>
+        <p class="privacy">🔒 Takes about 2 minutes</p>
         <button class="scroll-cue" id="scrollDown" type="button" aria-label="Read more">▾</button>
       </section>
       <section class="lp">

@@ -45,7 +45,7 @@ const CONFIG = {
 
   // ---- COPY: opt-in / intro (PRD §6, cold + problem-aware) -----------
   intro: {
-    eyebrow: "Free · about 2 minutes · no signup to start",
+    eyebrow: "Free · about 2 minutes",
     ctaShort: "Start free →",
     headline: "The work that lands back on your desk every week.",
     headlineAccent: "Let's take it off your plate.",
