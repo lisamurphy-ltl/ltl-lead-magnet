@@ -171,7 +171,17 @@
     if (d.email) state.email = state.email || d.email;
     state.isTeam = !!d.isTeam;
     if (d.believedLeak) state.believedLeak = d.believedLeak;
-    var r = parseFloat(d.payRate); if (r > 0) state.rate = r;
+    // Blended rate: don't value the whole team at the owner's personal hourly.
+    // If they have a team, blend the owner rate with the team's average rate
+    // (falls back to the firm default if no team rate was entered).
+    var owner = parseFloat(d.payRate) || 0;
+    if (d.isTeam) {
+      var teamRate = (parseFloat(d.teamAvg) || 0) > 0 ? parseFloat(d.teamAvg) : CFG.math.defaultBlendedRate;
+      var blended = owner > 0 ? Math.round((owner + teamRate) / 2) : teamRate;
+      if (blended > 0) state.rate = blended;
+    } else if (owner > 0) {
+      state.rate = owner;
+    }
     (d.selected || []).forEach(function (id) {
       var t = byId(id); if (!t) return;
       var hh = d.hours && d.hours[id];
@@ -474,7 +484,7 @@
     ]);
   }
   function buildBars(per) {
-    var items = per.slice(0, 6), W = 340, H = 214, L = 46, R = 12, T = 22, B = 34, cw = W - L - R, ch = H - T - B;
+    var items = per.slice(0, 6), W = 340, H = 224, L = 46, R = 12, T = 22, B = 44, cw = W - L - R, ch = H - T - B;
     var max = items.length ? items[0].annual : 1, niceMax = niceCeil(max);
     var n = items.length, slot = cw / Math.max(1, n), bw = Math.min(38, slot * 0.5);
     var grid = "", gL = 4;
@@ -487,7 +497,7 @@
       var bh = niceMax ? (x.annual / niceMax) * ch : 0, cx = L + slot * i + slot / 2, y = T + (ch - bh), col = heat(i);
       return '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(2, bh).toFixed(1) + '" rx="4" fill="' + col + '"/>' +
         '<text class="ax" x="' + cx.toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" text-anchor="middle" fill="' + col + '" style="font-weight:700">' + usdK(x.annual) + '</text>' +
-        '<text class="ax" x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle">' + escText(x.short) + '</text>';
+        '<text class="ax" x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="end" transform="rotate(-28 ' + cx.toFixed(1) + ' ' + (H - 12) + ')" style="font-size:9px">' + escText(x.short) + '</text>';
     }).join("");
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' + grid + bars + "</svg>";
   }
@@ -517,7 +527,7 @@
     /* ---------- SIDEBAR ---------- */
     var sbBody = h("div", { class: "sb-body" }, []);
     var setup = h("div", { class: "sb-sec" }, [h("h3", { class: "sec-head" }, ["Your Setup"])]);
-    setup.appendChild(ctrlInput("Blended rate", 15, 150, 1, state.rate, function (v) { return "$" + v + "/hr"; },
+    setup.appendChild(ctrlInput("Blended rate", 15, 400, 1, state.rate, function (v) { return "$" + v + "/hr"; },
       "What an hour of this work costs you, on average.", function (v) { state.rate = v; update(); }));
     sbBody.appendChild(setup);
     var hsec = h("div", { class: "sb-sec" }, [h("h3", { class: "sec-head" }, ["Hours & People Per Task"])]);
