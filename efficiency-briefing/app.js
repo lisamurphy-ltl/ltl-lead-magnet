@@ -484,7 +484,7 @@
     ]);
   }
   function buildBars(per) {
-    var items = per.slice(0, 6), W = 340, H = 224, L = 46, R = 12, T = 22, B = 44, cw = W - L - R, ch = H - T - B;
+    var items = per.slice(0, 6), W = 340, H = 248, L = 46, R = 16, T = 22, B = 68, cw = W - L - R, ch = H - T - B;
     var max = items.length ? items[0].annual : 1, niceMax = niceCeil(max);
     var n = items.length, slot = cw / Math.max(1, n), bw = Math.min(38, slot * 0.5);
     var grid = "", gL = 4;
