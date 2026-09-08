@@ -81,11 +81,57 @@
         h("button", { class: "btn", id: "buyBtn", onclick: startCheckout }, [s.cta]),
       ]),
       h("p", { class: "price-line" }, [s.priceLine]),
+      passBox(),
       h("div", { class: "offramp" }, [h("a", { href: CFG.brand.offRampUrl }, [s.offRamp])]),
     ]);
 
     app.appendChild(hero);
     app.appendChild(body);
+  }
+
+  /* ---- Partner / client pass: one shared code word, once per email ---- */
+  function passBox() {
+    var form = h("div", { id: "passForm", class: "pass-form", style: "display:none;max-width:420px;margin:12px auto 0" }, [
+      h("div", { class: "field" }, [
+        h("label", { for: "passCode" }, ["Your code"]),
+        h("input", { type: "text", id: "passCode", autocomplete: "off", autocapitalize: "characters", placeholder: "e.g. LTLPASS" }),
+      ]),
+      h("div", { class: "field" }, [
+        h("label", { for: "passEmail" }, ["Your email", h("span", { class: "sub" }, [" — each email can use the code once"])]),
+        h("input", { type: "email", id: "passEmail", autocomplete: "email", placeholder: "you@company.com" }),
+      ]),
+      h("div", { class: "btn-row" }, [
+        h("button", { class: "btn btn--ghost", id: "passBtn", onclick: startPassCheckout }, ["Unlock with my code →"]),
+      ]),
+    ]);
+    var toggle = h("p", { class: "price-line", style: "margin-top:14px" }, [
+      h("a", { href: "#", style: "color:inherit;text-decoration:underline", onclick: function (e) {
+        e.preventDefault();
+        var open = form.style.display !== "none";
+        form.style.display = open ? "none" : "block";
+        if (!open) { var c = document.getElementById("passCode"); if (c) c.focus(); }
+      } }, ["Have a partner or client code?"]),
+    ]);
+    return h("div", {}, [toggle, form]);
+  }
+
+  function startPassCheckout() {
+    var codeEl = document.getElementById("passCode"), emailEl = document.getElementById("passEmail");
+    var code = (codeEl && codeEl.value || "").trim(), email = (emailEl && emailEl.value || "").trim();
+    if (!code) { flash("Enter your code first."); if (codeEl) codeEl.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { flash("Enter a valid email address."); if (emailEl) emailEl.focus(); return; }
+    var btn = document.getElementById("passBtn");
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Checking your code…'; }
+    fetch("/api/eb-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: code, email: email }) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (x) {
+        if (x.ok && x.d && x.d.url) { location.href = x.d.url; }
+        else { throw new Error(x.d && x.d.error ? x.d.error : "Couldn't check that code."); }
+      })
+      .catch(function (err) {
+        if (btn) { btn.disabled = false; btn.textContent = "Unlock with my code →"; }
+        flash(err.message);
+      });
   }
 
   function startCheckout() {
