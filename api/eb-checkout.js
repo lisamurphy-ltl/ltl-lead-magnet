@@ -35,7 +35,10 @@ async function emailAlreadyUsedPass(stripe, email) {
     if (starting_after) params.starting_after = starting_after;
     const list = await stripe.checkout.sessions.list(params);
     for (const s of list.data) {
-      if ((s.metadata && s.metadata.pass_code) || s.amount_total === 0) return true;
+      if (s.metadata && s.metadata.pass_code) return true;
+      // Legacy $0 unlocks of THIS product (OWNERTEST at checkout). Other products' $0 sessions don't count.
+      const isBriefing = (s.success_url || "").indexOf("efficiency-briefing") !== -1 || s.payment_link === "plink_1TnpqILeweUh8LMaLKgGuZ9F";
+      if (s.amount_total === 0 && isBriefing) return true;
     }
     if (!list.has_more) break;
     starting_after = list.data[list.data.length - 1].id;
